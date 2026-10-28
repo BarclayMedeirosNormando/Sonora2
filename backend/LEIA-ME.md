@@ -34,10 +34,6 @@ Depois: `flutter pub get` e `flutter run` (ou gerar o APK).
 - Planilha tem limite de 10 milhões de células: rode `limparPlaysAntigos()` de vez em quando (apaga plays com mais de 180 dias).
 
 ## Atualizar o catálogo (músicas novas) sem gerar APK
-1. Coloque as músicas novas na pasta da biblioteca (nome `Artista - Título.mp3`) e gere o `cache.json` de novo.
-2. No PowerShell: `powershell -ExecutionPolicy Bypass -File .\atualizar_catalogo.ps1`
-   (roda `atualizar.py` e `exportar.py` e salva `catalogos\catalogo-<data>.zip`).
-3. Suba o zip no Drive (acesso "qualquer pessoa com o link") e copie o link.
-4. No painel, aba **Aparelhos**, card **Catálogo de músicas**: versão (o script mostra, ex. `2026-10-28_1130`), link e notas → **Publicar catálogo**.
-5. Ao abrir o app, cada aparelho liberado baixa o catálogo novo sozinho. Não precisa de APK.
-As fotos dos artistas não vão no zip: o app baixa cada foto na primeira vez que ela aparece.
+Veja o `GUIA.md` na raiz do projeto: basta rodar `atualizar_musicas.ps1` e, na primeira vez, publicar o link do
+`catalogo.zip` no painel (card **Catálogo de músicas**, versão vazia = automática).
+O Apps Script pede permissão de acesso ao Drive na primeira implantação com versão automática: aceite.

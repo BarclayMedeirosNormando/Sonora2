@@ -16,15 +16,10 @@ fica dentro do app e as favoritas, playlists e downloads ficam no aparelho.
 Por conter IDs de arquivos do Drive, ficam de fora e sao gerados localmente:
 `etapa1_nomes/cache.json`, `etapa1_nomes/saida/` e `app/assets/catalogo/`.
 
-## Gerar o catalogo e rodar o app
+## Dia a dia
 
-    cd etapa1_nomes
-    py atualizar.py cache.json
-    py exportar.py
-    xcopy saida\app\* ..\app\assets\catalogo\ /E /I /Y
-    cd ..\app
-    flutter pub get
-    flutter run
+Veja o **`GUIA.md`**: atualizar musicas (`atualizar_musicas.ps1`), gerar APK (`gerar_apk.ps1`), painel de
+liberacao e como trabalhar em outro computador (`backup_para_outro_pc.ps1`, `restaurar_no_novo_pc.ps1`).
 
 ## Recursos
 

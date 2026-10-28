@@ -39,6 +39,11 @@ Write-Host '4/5 Gerando o catalogo...'
 py exportar.py
 if ($LASTEXITCODE -ne 0) { throw 'exportar.py falhou' }
 
+# Copia o catalogo para dentro do app (usado no proximo APK; sem isso o APK novo nasce sem catalogo)
+$assets = Join-Path $raiz 'app\assets\catalogo'
+New-Item -ItemType Directory -Force -Path (Join-Path $assets 'artistas') | Out-Null
+Copy-Item (Join-Path $pasta 'saida\app\*') $assets -Recurse -Force
+
 Write-Host '5/5 Guardando o catalogo.zip...'
 $zip = Join-Path $pasta 'saida\catalogo.zip'
 $versao = Get-Date -Format 'yyyy-MM-dd_HHmm'

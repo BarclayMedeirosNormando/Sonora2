@@ -2,6 +2,9 @@
 $ErrorActionPreference = 'Stop'
 $raiz = $PSScriptRoot
 $app = Join-Path $raiz 'app'
+if (-not (Test-Path (Join-Path $app 'assets\catalogo\indice.json'))) {
+    throw 'Falta o catalogo dentro do app. Rode primeiro: .\atualizar_musicas.ps1'
+}
 $linha = Select-String -Path (Join-Path $app 'pubspec.yaml') -Pattern '^version:\s*(\S+)' | Select-Object -First 1
 $versao = $linha.Matches[0].Groups[1].Value
 Set-Location $app
