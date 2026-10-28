@@ -6,6 +6,7 @@ import 'biblioteca_usuario.dart';
 import 'catalogo.dart';
 import 'config.dart';
 import 'downloads.dart';
+import 'telemetria.dart';
 
 /// Player unico do app: fila, tocar/pausar, proxima/anterior, embaralhar,
 /// repetir e timer para dormir.
@@ -26,6 +27,7 @@ class PlayerService extends ChangeNotifier {
   int repetir = 0; // 0 = nao, 1 = fila toda, 2 = uma faixa
   String? erro;
   Timer? _sono;
+  Timer? _telemetria;
   DateTime? sonoAte;
 
   List<Faixa> get fila => List.unmodifiable(_fila);
@@ -64,6 +66,7 @@ class PlayerService extends ChangeNotifier {
     _indice = i;
     erro = null;
     MinhaBiblioteca.i.registrarRecente(_fila[i]);
+    _agendarTelemetria(_fila[i]);
     notifyListeners();
     try {
       final local = DownloadService.i.caminho(_fila[i].id);
@@ -77,6 +80,16 @@ class PlayerService extends ChangeNotifier {
       erro = 'Nao foi possivel tocar: $e';
     }
     notifyListeners();
+  }
+
+  /// So conta como "ouvida" depois de 8 segundos na mesma musica (pular rapido nao conta).
+  void _agendarTelemetria(Faixa f) {
+    _telemetria?.cancel();
+    _telemetria = Timer(const Duration(seconds: 8), () {
+      if (atual?.id == f.id && _audio.playing) {
+        TelemetriaService.i.registrarPlay(f, Catalogo.generoDe(f.artistaId));
+      }
+    });
   }
 
   void _terminou() {

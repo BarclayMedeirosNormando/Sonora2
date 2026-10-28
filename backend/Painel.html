@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sonora 2.0 - Painel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #121212; --card: #1c1c1c; --card2: #242424; --linha: #2e2e2e;
+    --texto: #f2f2f2; --suave: #a8a8a8; --verde: #1db954; --vermelho: #e5484d; --amarelo: #f5a524; --azul: #4c8dff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--texto); font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--linha); flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; flex: 1; min-width: 160px; }
+  header small { color: var(--suave); }
+  button { font: inherit; color: var(--texto); background: var(--card2); border: 1px solid var(--linha); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+  button:hover { border-color: #444; }
+  button.verde { background: var(--verde); color: #04140a; border-color: var(--verde); font-weight: 600; }
+  button.verm { background: transparent; color: var(--vermelho); border-color: var(--vermelho); }
+  nav { display: flex; gap: 6px; padding: 10px 16px 0; overflow-x: auto; }
+  nav button { border-radius: 8px 8px 0 0; border-bottom: none; white-space: nowrap; }
+  nav button.ativa { background: var(--card); border-color: var(--verde); color: var(--verde); font-weight: 600; }
+  nav .badge { background: var(--amarelo); color: #1a1100; border-radius: 10px; padding: 0 7px; margin-left: 6px; font-size: 12px; font-weight: 700; }
+  main { padding: 16px; max-width: 1200px; margin: 0 auto; }
+  section { display: none; } section.ativa { display: block; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .kpi { background: var(--card); border: 1px solid var(--linha); border-radius: 10px; padding: 12px; }
+  .kpi b { display: block; font-size: 24px; } .kpi span { color: var(--suave); font-size: 12px; }
+  .kpi.alerta b { color: var(--amarelo); }
+  .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .card { background: var(--card); border: 1px solid var(--linha); border-radius: 10px; padding: 14px; min-width: 0; }
+  .card h2 { font-size: 14px; margin: 0 0 10px; color: var(--suave); font-weight: 600; }
+  .alto { position: relative; height: 240px; } .alto.grande { height: 340px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--linha); vertical-align: middle; }
+  th { color: var(--suave); font-weight: 600; font-size: 12px; }
+  .tabela { overflow-x: auto; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .tag.Liberado { background: rgba(29,185,84,.18); color: var(--verde); }
+  .tag.Bloqueado { background: rgba(229,72,77,.18); color: var(--vermelho); }
+  .tag.Aguardando { background: rgba(245,165,36,.18); color: var(--amarelo); }
+  input, select { font: inherit; color: var(--texto); background: var(--card2); border: 1px solid var(--linha); border-radius: 8px; padding: 7px 10px; }
+  input.nome { width: 150px; }
+  .barra { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .suave { color: var(--suave); } .vazio { color: var(--suave); padding: 18px 0; text-align: center; }
+  .ponto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--verde); margin-right: 6px; box-shadow: 0 0 6px var(--verde); }
+  .agora { padding: 8px 0; border-bottom: 1px solid var(--linha); } .agora:last-child { border-bottom: none; }
+  #modal { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none; align-items: flex-start; justify-content: center; padding: 24px 12px; overflow-y: auto; z-index: 10; }
+  #modal.aberto { display: flex; }
+  #modal .caixa { background: var(--card); border: 1px solid var(--linha); border-radius: 12px; padding: 16px; width: 100%; max-width: 760px; }
+  .topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+  #erro { display: none; background: rgba(229,72,77,.15); border: 1px solid var(--vermelho); color: #ffb3b5; padding: 10px 14px; margin: 12px 16px 0; border-radius: 8px; }
+  @media (max-width: 600px) { .grade { grid-template-columns: 1fr; } input.nome { width: 110px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sonora 2.0 &middot; Painel</h1>
+  <small id="atualizado">carregando&hellip;</small>
+  <button id="btnAtualizar" type="button">&#8635; Atualizar</button>
+</header>
+<div id="erro"></div>
+<nav id="abas">
+  <button type="button" data-aba="geral" class="ativa">Vis&atilde;o geral</button>
+  <button type="button" data-aba="aparelhos">Aparelhos<span id="badgeAguardando" class="badge" style="display:none"></span></button>
+  <button type="button" data-aba="atividade">Atividade</button>
+  <button type="button" data-aba="rankings">Rankings</button>
+</nav>
+<main>
+  <section id="geral" class="ativa">
+    <div class="kpis" id="kpis"></div>
+    <div class="grade">
+      <div class="card"><h2>Plays por dia (30 dias)</h2><div class="alto"><canvas id="cDia"></canvas></div></div>
+      <div class="card"><h2>Plays por hora do dia</h2><div class="alto"><canvas id="cHora"></canvas></div></div>
+    </div>
+    <div class="card"><h2>Ouvindo agora (&uacute;ltimos 10 min)</h2><div id="agora"></div></div>
+  </section>
+
+  <section id="aparelhos">
+    <div class="card" id="cardAtual">
+      <h2>Atualiza&ccedil;&atilde;o do app</h2>
+      <div class="suave" id="atualResumo" style="margin-bottom:8px"></div>
+      <div class="barra">
+        <input id="atVersao" placeholder="Vers&atilde;o (ex.: 0.6.0+6)" size="16">
+        <input id="atLink" placeholder="Link do APK no Drive" size="34">
+        <input id="atNotas" placeholder="O que mudou (opcional)" size="30">
+        <button type="button" class="verde" id="btnPublicar">Publicar</button>
+        <button type="button" class="verm" id="btnRemoverAt">Remover</button>
+      </div>
+    </div>
+    <div class="barra">
+      <select id="fStatus">
+        <option value="">Todos</option><option>Aguardando</option><option>Liberado</option><option>Bloqueado</option><option value="__desat">Desatualizados</option>
+      </select>
+      <input id="fBusca" placeholder="Buscar por nome ou ID" size="22">
+      <span class="suave" id="contaAp"></span>
+    </div>
+    <div class="card tabela"><table>
+      <thead><tr><th>Status</th><th>Nome</th><th>Aparelho</th><th>&Uacute;ltimo acesso</th><th>Plays</th><th>&Uacute;ltima m&uacute;sica</th><th></th></tr></thead>
+      <tbody id="tbAp"></tbody>
+    </table></div>
+  </section>
+
+  <section id="atividade">
+    <div class="card tabela"><h2>&Uacute;ltimas m&uacute;sicas ouvidas</h2><table>
+      <thead><tr><th>Quando</th><th>Quem</th><th>M&uacute;sica</th><th>Artista</th><th>G&ecirc;nero</th></tr></thead>
+      <tbody id="tbAtiv"></tbody>
+    </table></div>
+  </section>
+
+  <section id="rankings">
+    <div class="barra" id="periodos">
+      <span class="suave">Per&iacute;odo:</span>
+      <button type="button" data-d="7">7 dias</button><button type="button" data-d="30" class="verde">30 dias</button>
+      <button type="button" data-d="90">90 dias</button><button type="button" data-d="0">Tudo</button>
+    </div>
+    <div class="grade">
+      <div class="card"><h2>G&ecirc;neros mais ouvidos</h2><div class="alto grande"><canvas id="cGen"></canvas></div></div>
+      <div class="card"><h2>Cantores / bandas mais tocados</h2><div class="alto grande"><canvas id="cArt"></canvas></div></div>
+    </div>
+    <div class="grade">
+      <div class="card"><h2>M&uacute;sicas mais tocadas</h2><div class="alto grande"><canvas id="cMus"></canvas></div></div>
+      <div class="card tabela"><h2>Top m&uacute;sicas (detalhe)</h2><table>
+        <thead><tr><th>#</th><th>M&uacute;sica</th><th>Artista</th><th>Plays</th><th>Ouvintes</th></tr></thead>
+        <tbody id="tbMus"></tbody></table></div>
+    </div>
+  </section>
+</main>
+
+<div id="modal"><div class="caixa">
+  <div class="topo"><b id="mTitulo"></b><button type="button" id="mFechar">Fechar</button></div>
+  <div id="mCorpo"></div>
+</div></div>
+
+<script>
+var CHAVE = <?!= JSON.stringify(chave) ?>;
+var dias = 30, dados = null, aparelhos = [], graficos = {}, timer = null;
+var CORES = ['#1db954','#4c8dff','#f5a524','#b062ff','#ff6b8a','#2dd4bf','#f97316','#a3e635','#38bdf8','#e879f9','#facc15','#fb7185','#94a3b8','#34d399','#c084fc'];
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function fmt(t) { return t ? new Date(t).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'; }
+function atras(t) {
+  if (!t) return '-';
+  var m = Math.round((Date.now() - t) / 60000);
+  if (m < 1) return 'agora'; if (m < 60) return m + ' min'; if (m < 1440) return Math.round(m / 60) + ' h';
+  return Math.round(m / 1440) + ' d';
+}
+function erro(msg) { var e = $('erro'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
+function falha(e) { erro('Erro: ' + ((e && e.message) || e)); }
+
+// ---- abas
+document.getElementById('abas').addEventListener('click', function (ev) {
+  var b = ev.target.closest('button[data-aba]'); if (!b) return;
+  trocarAba(b.getAttribute('data-aba'));
+});
+function trocarAba(nome) {
+  var bs = document.querySelectorAll('#abas button'), ss = document.querySelectorAll('main > section');
+  for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('ativa', bs[i].getAttribute('data-aba') === nome);
+  for (var j = 0; j < ss.length; j++) ss[j].classList.toggle('ativa', ss[j].id === nome);
+  for (var k in graficos) if (graficos[k]) graficos[k].resize();
+}
+
+// ---- graficos
+function grafico(id, config) {
+  if (graficos[id]) { graficos[id].destroy(); }
+  graficos[id] = new Chart($(id).getContext('2d'), config);
+}
+function opcoesBase(extra) {
+  var o = { responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: { legend: { labels: { color: '#a8a8a8' } } },
+    scales: { x: { ticks: { color: '#a8a8a8' }, grid: { color: '#2a2a2a' } }, y: { ticks: { color: '#a8a8a8' }, grid: { color: '#2a2a2a' }, beginAtZero: true } } };
+  for (var k in (extra || {})) o[k] = extra[k];
+  return o;
+}
+function barrasH(id, itens, rotulo) {
+  var nomes = itens.map(function (x) { return x.extra && rotulo ? x.nome + ' - ' + x.extra : x.nome; });
+  grafico(id, { type: 'bar', data: { labels: nomes, datasets: [{ data: itens.map(function (x) { return x.plays; }), backgroundColor: CORES[0] }] },
+    options: opcoesBase({ indexAxis: 'y', plugins: { legend: { display: false } },
+      scales: { x: { ticks: { color: '#a8a8a8' }, grid: { color: '#2a2a2a' }, beginAtZero: true }, y: { ticks: { color: '#f2f2f2', font: { size: 11 } }, grid: { display: false } } } }) });
+}
+
+// ---- carregar dados
+function carregar() {
+  $('btnAtualizar').disabled = true;
+  google.script.run.withSuccessHandler(function (d) {
+    dados = d; $('btnAtualizar').disabled = false; erro('');
+    $('atualizado').textContent = 'atualizado ' + fmt(d.gerado);
+    desenharGeral(); desenharAtividade(); desenharRankings();
+  }).withFailureHandler(function (e) { $('btnAtualizar').disabled = false; falha(e); }).dadosPainel(CHAVE, dias);
+  carregarAparelhos();
+}
+function carregarAparelhos() {
+  google.script.run.withSuccessHandler(function (l) { aparelhos = l; desenharAparelhos(); if (infoAtual) resumoAtual(infoAtual); })
+    .withFailureHandler(falha).listarAparelhos(CHAVE);
+}
+
+function desenharGeral() {
+  var k = dados.kpi;
+  var itens = [['liberados', 'Aparelhos liberados'], ['aguardando', 'Aguardando libera&ccedil;&atilde;o'], ['bloqueados', 'Bloqueados'],
+    ['online', 'Ouvindo agora'], ['ativosHoje', 'Ativos hoje'], ['ouvintesHoje', 'Ouvintes hoje'],
+    ['playsHoje', 'Plays hoje'], ['plays7d', 'Plays 7 dias'], ['plays30d', 'Plays 30 dias'], ['playsTotal', 'Plays no total']];
+  $('kpis').innerHTML = itens.map(function (i) {
+    return '<div class="kpi' + (i[0] === 'aguardando' && k.aguardando > 0 ? ' alerta' : '') + '"><b>' + (k[i[0]] || 0) + '</b><span>' + i[1] + '</span></div>';
+  }).join('');
+  var b = $('badgeAguardando'); b.style.display = k.aguardando > 0 ? 'inline' : 'none'; b.textContent = k.aguardando;
+  grafico('cDia', { type: 'line', data: { labels: dados.porDia.map(function (x) { return x.dia.slice(8) + '/' + x.dia.slice(5, 7); }),
+    datasets: [{ label: 'Plays', data: dados.porDia.map(function (x) { return x.plays; }), borderColor: CORES[0], backgroundColor: 'rgba(29,185,84,.15)', fill: true, tension: .3 },
+               { label: 'Ouvintes', data: dados.porDia.map(function (x) { return x.ouvintes; }), borderColor: CORES[1], tension: .3 }] }, options: opcoesBase() });
+  grafico('cHora', { type: 'bar', data: { labels: dados.porHora.map(function (_, h) { return h + 'h'; }),
+    datasets: [{ data: dados.porHora, backgroundColor: CORES[2] }] }, options: opcoesBase({ plugins: { legend: { display: false } } }) });
+  $('agora').innerHTML = dados.ouvindoAgora.length ? dados.ouvindoAgora.map(function (a) {
+    return '<div class="agora"><span class="ponto"></span><b>' + esc(a.nome) + '</b> <span class="suave">h&aacute; ' + atras(a.quando) + '</span><br><span>' + esc(a.musica) + '</span></div>';
+  }).join('') : '<div class="vazio">Ningu&eacute;m ouvindo neste momento.</div>';
+}
+
+function desenharAparelhos() {
+  var st = $('fStatus').value, q = $('fBusca').value.trim().toLowerCase();
+  var lista = aparelhos.filter(function (a) {
+    return (!st || (st === '__desat' ? a.desatualizado : a.status === st)) && (!q || (a.nome + ' ' + a.id).toLowerCase().indexOf(q) >= 0);
+  });
+  $('contaAp').textContent = lista.length + ' de ' + aparelhos.length;
+  $('tbAp').innerHTML = lista.length ? lista.map(function (a) {
+    var bot = a.status === 'Liberado'
+      ? '<button type="button" class="verm" data-acao="Bloqueado" data-id="' + esc(a.id) + '">Bloquear</button>'
+      : '<button type="button" class="verde" data-acao="Liberado" data-id="' + esc(a.id) + '">Liberar</button>' +
+        (a.status === 'Aguardando' ? ' <button type="button" class="verm" data-acao="Bloqueado" data-id="' + esc(a.id) + '">Bloquear</button>' : '');
+    return '<tr><td><span class="tag ' + esc(a.status) + '">' + esc(a.status) + '</span></td>' +
+      '<td><input class="nome" data-nome="' + esc(a.id) + '" value="' + esc(a.nome) + '" placeholder="dar um nome"></td>' +
+      '<td class="suave">' + esc(a.plataforma) + ' ' + esc(a.versao) + (a.desatualizado ? ' <span class="tag Aguardando">desatualizado</span>' : '') + '<br><small>' + esc(a.id.slice(0, 8)) + '&hellip;</small></td>' +
+      '<td>' + fmt(a.ultimo) + '<br><small class="suave">h&aacute; ' + atras(a.ultimo) + '</small></td>' +
+      '<td>' + a.total + '</td><td class="suave">' + esc(a.ultMusica) + '</td>' +
+      '<td style="white-space:nowrap">' + bot + ' <button type="button" data-ver="' + esc(a.id) + '">Ver</button></td></tr>';
+  }).join('') : '<tr><td colspan="7" class="vazio">Nenhum aparelho.</td></tr>';
+}
+function resumoAtual(info) {
+  var n = aparelhos.filter(function (a) { return a.desatualizado; }).length;
+  $('atualResumo').innerHTML = info && info.versao
+    ? 'Vers&atilde;o publicada: <b>' + esc(info.versao) + '</b>' + (info.notas ? ' &middot; ' + esc(info.notas) : '') +
+      ' &middot; <b>' + n + '</b> aparelho(s) desatualizado(s)'
+    : 'Nenhuma atualiza&ccedil;&atilde;o publicada.';
+}
+var infoAtual = null;
+function carregarAtual() {
+  google.script.run.withSuccessHandler(function (i) { infoAtual = i; resumoAtual(i); if (i.versao) { $('atVersao').value = i.versao; $('atLink').value = i.link; $('atNotas').value = i.notas; } }).withFailureHandler(falha).lerAtualizacao(CHAVE);
+}
+$('btnPublicar').addEventListener('click', function () {
+  var b = this; b.disabled = true;
+  google.script.run.withSuccessHandler(function () { b.disabled = false; carregarAtual(); carregarAparelhos(); })
+    .withFailureHandler(function (e) { b.disabled = false; falha(e); })
+    .publicarAtualizacao(CHAVE, $('atVersao').value, $('atLink').value, $('atNotas').value);
+});
+$('btnRemoverAt').addEventListener('click', function () {
+  google.script.run.withSuccessHandler(function () { $('atVersao').value = $('atLink').value = $('atNotas').value = ''; carregarAtual(); carregarAparelhos(); })
+    .withFailureHandler(falha).removerAtualizacao(CHAVE);
+});
+$('fStatus').addEventListener('change', desenharAparelhos);
+$('fBusca').addEventListener('input', desenharAparelhos);
+$('tbAp').addEventListener('click', function (ev) {
+  var b = ev.target.closest('button'); if (!b) return;
+  if (b.hasAttribute('data-ver')) return detalhe(b.getAttribute('data-ver'));
+  var acao = b.getAttribute('data-acao'), id = b.getAttribute('data-id'); if (!acao) return;
+  b.disabled = true;
+  google.script.run.withSuccessHandler(function () { carregar(); }).withFailureHandler(function (e) { b.disabled = false; falha(e); })
+    .definirStatus(CHAVE, id, acao);
+});
+$('tbAp').addEventListener('change', function (ev) {
+  var i = ev.target.closest('input[data-nome]'); if (!i) return;
+  google.script.run.withFailureHandler(falha).definirNome(CHAVE, i.getAttribute('data-nome'), i.value);
+});
+
+function desenharAtividade() {
+  $('tbAtiv').innerHTML = dados.recentes.length ? dados.recentes.map(function (r) {
+    return '<tr><td>' + fmt(r.t) + '</td><td>' + esc(r.quem) + '</td><td>' + esc(r.titulo) + '</td><td>' + esc(r.artista) + '</td><td class="suave">' + esc(r.genero) + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" class="vazio">Ainda sem plays.</td></tr>';
+}
+
+function desenharRankings() {
+  var g = dados.topGeneros;
+  grafico('cGen', { type: 'doughnut', data: { labels: g.map(function (x) { return x.nome; }),
+    datasets: [{ data: g.map(function (x) { return x.plays; }), backgroundColor: g.map(function (_, i) { return CORES[i % CORES.length]; }), borderColor: '#1c1c1c' }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'right', labels: { color: '#a8a8a8', boxWidth: 12 } } } } });
+  barrasH('cArt', dados.topArtistas, false);
+  barrasH('cMus', dados.topMusicas, true);
+  $('tbMus').innerHTML = dados.topMusicas.length ? dados.topMusicas.map(function (m, i) {
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(m.nome) + '</td><td class="suave">' + esc(m.extra) + '</td><td>' + m.plays + '</td><td>' + m.ouvintes + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" class="vazio">Ainda sem plays neste per&iacute;odo.</td></tr>';
+}
+$('periodos').addEventListener('click', function (ev) {
+  var b = ev.target.closest('button[data-d]'); if (!b) return;
+  dias = Number(b.getAttribute('data-d'));
+  var bs = document.querySelectorAll('#periodos button');
+  for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('verde', bs[i] === b);
+  carregar();
+});
+
+// ---- detalhe de um aparelho
+function lista(titulo, itens, ext) {
+  return '<div class="card" style="margin-bottom:10px"><h2>' + titulo + '</h2>' + (itens.length ? '<table>' + itens.map(function (x) {
+    return '<tr><td>' + esc(x.nome) + (ext && x.extra ? ' <span class="suave">- ' + esc(x.extra) + '</span>' : '') + '</td><td style="text-align:right">' + x.plays + '</td></tr>';
+  }).join('') + '</table>' : '<div class="vazio">Sem dados.</div>') + '</div>';
+}
+function detalhe(id) {
+  var a = aparelhos.filter(function (x) { return x.id === id; })[0]; if (!a) return;
+  $('mTitulo').textContent = (a.nome || 'Aparelho') + ' - ' + a.status;
+  $('mCorpo').innerHTML = '<div class="vazio">Carregando&hellip;</div>';
+  $('modal').classList.add('aberto');
+  google.script.run.withSuccessHandler(function (d) {
+    $('mCorpo').innerHTML = '<p class="suave">ID: ' + esc(a.id) + '<br>Primeiro acesso: ' + fmt(a.primeiro) + ' &middot; &Uacute;ltimo: ' + fmt(a.ultimo) + ' &middot; ' + a.total + ' plays</p>' +
+      lista('Artistas mais ouvidos', d.topArtistas, false) + lista('G&ecirc;neros', d.topGeneros, false) + lista('M&uacute;sicas mais ouvidas', d.topMusicas, true) +
+      '<div class="card"><h2>&Uacute;ltimas ouvidas</h2><table>' + (d.ultimos.length ? d.ultimos.map(function (u) {
+        return '<tr><td class="suave">' + fmt(u.t) + '</td><td>' + esc(u.titulo) + ' <span class="suave">- ' + esc(u.artista) + '</span></td></tr>';
+      }).join('') : '<tr><td class="vazio">Sem plays.</td></tr>') + '</table></div>';
+  }).withFailureHandler(function (e) { $('mCorpo').innerHTML = '<div class="vazio">Erro: ' + esc(e.message || e) + '</div>'; })
+    .detalheAparelho(CHAVE, id, 0);
+}
+$('mFechar').addEventListener('click', function () { $('modal').classList.remove('aberto'); });
+$('modal').addEventListener('click', function (ev) { if (ev.target === $('modal')) $('modal').classList.remove('aberto'); });
+
+$('btnAtualizar').addEventListener('click', carregar);
+carregarAtual();
+carregar();
+timer = setInterval(function () { if (!document.hidden) carregar(); }, 60000);
+</script>
+</body>
+</html>

@@ -8,3 +8,10 @@ const String urlBackend = '';
 String urlAudio(String fileId) => urlBackend.isEmpty
     ? 'https://drive.google.com/uc?export=download&id=$fileId'
     : '$urlBackend/midia/$fileId';
+
+/// Endereco do Web App (Apps Script) que libera aparelhos e recebe o que foi ouvido,
+/// o mesmo que termina em /exec. Deixe VAZIO para desligar o controle (o app abre para todos).
+const String urlControle = 'https://script.google.com/macros/s/AKfycbyXh50EaxHMiVv4BqbFNcSZ0RmEztszXWt8LTZT_QJoLLKBgT62ffHmdxwEXaUEH17D/exec';
+
+/// Versao mostrada na tela Inicio e enviada ao painel. Manter igual ao pubspec.yaml.
+const String versaoApp = '0.6.0+6';

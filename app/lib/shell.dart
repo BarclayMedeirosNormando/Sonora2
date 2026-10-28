@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'artista.dart';
+import 'atualizacao.dart';
 import 'biblioteca_usuario.dart';
 import 'catalogo.dart';
+import 'config.dart';
 import 'downloads_tela.dart';
 import 'player.dart';
 import 'playlists.dart';
@@ -17,6 +19,16 @@ class Shell extends StatefulWidget {
 
 class _ShellState extends State<Shell> {
   int _aba = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // procura versao nova sem travar a abertura do app
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final info = await verificarAtualizacao();
+      if (info != null && mounted) mostrarAtualizacao(context, info);
+    });
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -73,8 +85,14 @@ class AbaInicio extends StatelessWidget {
                 style:
                     const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
           ),
-          const Text('v0.4.0+4',
-              style: TextStyle(fontSize: 12, color: cinzaTexto)),
+          GestureDetector(
+            onTap: () => verificarManual(context),
+            child: const Padding(
+              padding: EdgeInsets.all(6),
+              child: Text('v$versaoApp',
+                  style: TextStyle(fontSize: 12, color: cinzaTexto)),
+            ),
+          ),
         ]),
       ),
       Padding(

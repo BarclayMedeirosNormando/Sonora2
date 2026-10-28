@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'acesso.dart';
+import 'acesso_tela.dart';
 import 'biblioteca_usuario.dart';
 import 'catalogo.dart';
 import 'downloads.dart';
 import 'shell.dart';
+import 'telemetria.dart';
 import 'widgets.dart';
 
 class Splash extends StatefulWidget {
@@ -27,10 +30,19 @@ class _SplashState extends State<Splash> {
         MinhaBiblioteca.i.carregar(),
         DownloadService.i.carregar(),
         Future<void>.delayed(const Duration(milliseconds: 1200)),
+        AcessoService.i.validar(),
       ]);
       if (!mounted) return;
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (_) => Shell(res[0] as Catalogo)));
+      final cat = res[0] as Catalogo;
+      final acesso = res[4] as EstadoAcesso;
+      if (acesso != EstadoAcesso.liberado) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => TelaAcesso(acesso, cat)));
+        return;
+      }
+      TelemetriaService.i.iniciar();
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => Shell(cat)));
     } catch (e) {
       setState(() => _erro = '$e');
     }

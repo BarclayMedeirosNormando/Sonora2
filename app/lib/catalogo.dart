@@ -60,6 +60,17 @@ class Catalogo {
   final List<ArtistaResumo> artistas;
   Catalogo(this.generos, this.artistas);
 
+  /// Catalogo carregado (usado para descobrir o genero de uma musica ao registrar o play).
+  static Catalogo? atual;
+  Map<String, String>? _generoPorArtista;
+
+  static String generoDe(String artistaId) {
+    final c = atual;
+    if (c == null || artistaId.isEmpty) return 'Outros';
+    c._generoPorArtista ??= {for (final a in c.artistas) a.id: a.genero};
+    return c._generoPorArtista![artistaId] ?? 'Outros';
+  }
+
   // Indice de busca por musica: carregado so na primeira busca.
   List<_EntradaBusca>? _indiceFaixas;
   Map<String, ArtistaResumo>? _porId;
@@ -108,7 +119,7 @@ class Catalogo {
   static Future<Catalogo> carregar() async {
     final txt = await rootBundle.loadString('assets/catalogo/indice.json');
     final j = jsonDecode(txt) as Map<String, dynamic>;
-    return Catalogo(
+    return atual = Catalogo(
       (j['generos'] as List)
           .map((e) => Genero.fromJson(e as Map<String, dynamic>))
           .toList(),
