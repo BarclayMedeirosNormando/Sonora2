@@ -1,0 +1,126 @@
+# Suas correcoes manuais. Valem POR CIMA do automatico e nao se perdem quando o catalogo e refeito.
+# Formato:  tipo;alvo;valor      (uma por linha; linhas com # sao ignoradas)
+#
+# genero;Zé Vaqueiro;Piseiro            -> forca o genero de um artista
+# unir;Beatles;The Beatles              -> trata dois nomes como o mesmo artista (o 3o campo e o nome que aparece)
+# faixa;03 - Simon Says.mp3;Pharoahe Monch   -> forca o artista de um arquivo (nome do arquivo exatamente como esta no Drive)
+#
+# Generos validos: Piseiro, Forró, Sertanejo, Axé, Pagode/Samba, MPB, Brega, Gospel, Funk, Rap, Reggae,
+# Blues, Discoteca, Pop, Eletrônica, Rock, R&B/Soul, Românticas, Jazz, Clássica
+
+# ===== Revisao de 28/10/2026 (gerada por Claude) =====
+# Reparos de nome (titulo invertido, '50 Cent') agora sao automaticos em nomes.py/atualizar.py.
+# --- unir nomes que sao o mesmo artista ---
+unir;ACDC;AC/DC
+unir;Banda Noda De Cajú;Noda de Caju
+unir;DENNIS;Dennis DJ
+unir;REM;R.E.M.
+unir;C/C Music Factory;C & C Music Factory
+unir;Cheiro de Amor;Banda Cheiro de Amor
+unir;MADONA;Madonna
+unir;Mart nália;Mart'nália
+unir;Daniel Oficial;Daniel
+unir;Isadora Pompeo 2018;Isadora Pompeo
+unir;Gabriela Rocha 2018;Gabriela Rocha
+unir;Gabriela Rocha e Coral Kemuel 2018;Gabriela Rocha
+unir;Titãs 1984;Titãs
+unir;#tbtTitãs 1986;Titãs
+unir;01 002. Daryl Hall & John Oates;Daryl Hall & John Oates
+# --- genero: corrigindo os que estavam errados e preenchendo os sem genero ---
+genero;Creedence Clearwater Revival;Rock
+genero;Skank;Rock
+genero;Os Paralamas do Sucesso;Rock
+genero;The Police;Rock
+genero;Jota Quest;Rock
+genero;Bonnie Tyler;Rock
+genero;Capital Inicial;Rock
+genero;Iron Maiden;Rock
+genero;Pato Fu;Rock
+genero;The Outfield;Rock
+genero;Forfun;Rock
+genero;Justin Bieber;Pop
+genero;Maroon 5;Pop
+genero;Bruno Mars;Pop
+genero;Lulu Santos;Pop
+genero;Doja Cat;Pop
+genero;Black Eyed Peas;Pop
+genero;Lagum;Pop
+genero;Céline Dion;Pop
+genero;IZA;Pop
+genero;Melim;Pop
+genero;KLB;Pop
+genero;Tiago Iorc;Pop
+genero;Jason Derulo;Pop
+genero;Miley Cyrus;Pop
+genero;Pajama Party;Pop
+genero;The Cover Girls;Pop
+genero;Kc & The Sunshine Band;Discoteca
+genero;Sister Sledge;Discoteca
+genero;Sybil;Discoteca
+genero;John Paul Young;Discoteca
+genero;Akon;R&B/Soul
+genero;Sade;R&B/Soul
+genero;The Temptations;R&B/Soul
+genero;Jackson 5;R&B/Soul
+genero;Ivete Sangalo;Axé
+genero;Banda Eva;Axé
+genero;É O Tchan;Axé
+genero;Babado Novo;Axé
+genero;Bell Marques;Axé
+genero;Jammil E Uma Noites;Axé
+genero;Axé 90 Graus;Axé
+genero;Timbalada;Axé
+genero;Banda Cheiro de Amor;Axé
+genero;Simone;MPB
+genero;Mart'nália;MPB
+genero;Ana Carolina;MPB
+genero;Mônica Salmaso;MPB
+genero;Fernanda Takai;MPB
+genero;Tiê;MPB
+genero;Maria Gadú;MPB
+genero;Marina Elali;MPB
+genero;Roberta Campos;MPB
+genero;Ayrton Montarroyos;MPB
+genero;Arnaldo Antunes;MPB
+genero;Ludmilla;Funk
+genero;Dennis DJ;Funk
+genero;MC L da Vinte;Funk
+genero;MC G15;Funk
+genero;Zé Vaqueiro;Piseiro
+genero;Projota;Rap
+genero;50 Cent;Rap
+genero;Grandmaster Slice;Rap
+genero;Sidoka;Rap
+genero;Young T & Bugsey;Rap
+genero;Guig Ghetto;Rap
+genero;Cat Dealers;Eletrônica
+genero;KVSH;Eletrônica
+genero;Bhaskar;Eletrônica
+genero;Daft Punk;Eletrônica
+genero;Adhemar De Campos;Gospel
+genero;Fernanda Brum;Gospel
+genero;Gabriel Elias;Gospel
+genero;Casa Aberta;Gospel
+genero;Priscilla Alcantara;Gospel
+genero;Leandro Borges;Gospel
+genero;Trazendo a Arca;Gospel
+genero;Adelso Freire;Gospel
+genero;Ousado Amor;Gospel
+genero;Livres Juliano Son;Gospel
+genero;Adoradores 3;Gospel
+genero;Toyan;Reggae
+genero;Billy Boyo;Reggae
+genero;Armandinho;Reggae
+genero;Chimarruts;Reggae
+genero;Sister Nancy;Reggae
+genero;Early B;Reggae
+genero;Cidade Negra;Reggae
+genero;Trio Virgulino;Forró
+genero;Dolly Parton;Sertanejo
+genero;Rafa & Pipo Marques;Sertanejo
+genero;César Oliveira & Rogério Melo;Sertanejo
+genero;Lucas Lucco;Sertanejo
+genero;Terra Samba;Pagode/Samba
+genero;Pagod art;Pagode/Samba
+genero;Bobby Bland;Blues
+genero;Decada Explosiva Romantica;Românticas

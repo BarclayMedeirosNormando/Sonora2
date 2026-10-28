@@ -1,0 +1,21 @@
+name: sonora2
+description: Sonora 2.0 - player de musica organizado por artista e genero.
+publish_to: "none"
+version: 0.4.0+4
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  just_audio: ^0.9.40
+  shared_preferences: ^2.3.0
+  path_provider: ^2.1.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/catalogo/
+    - assets/catalogo/artistas/
+    - assets/catalogo/fotos/

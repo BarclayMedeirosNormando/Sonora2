@@ -1,0 +1,17 @@
+# Dados gerados (tem IDs de arquivos do Drive; repo publico) - refazer com os scripts
+etapa1_nomes/cache.json
+etapa1_nomes/resultado.csv
+etapa1_nomes/saida/
+etapa1_nomes/__pycache__/
+etapa1_nomes/_backup_antes_reparo/
+app/assets/catalogo/
+
+# Build / IDE
+app/build/
+app/.dart_tool/
+app/.idea/
+*.iml
+.flutter-plugins-dependencies
+*.apk
+*.log
+*.pyc
