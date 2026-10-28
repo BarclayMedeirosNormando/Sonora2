@@ -96,7 +96,7 @@
       <h2>Cat&aacute;logo de m&uacute;sicas</h2>
       <div class="suave" id="catResumo" style="margin-bottom:8px"></div>
       <div class="barra">
-        <input id="ctVersao" placeholder="Vers&atilde;o (ex.: 2026-10-28)" size="16">
+        <input id="ctVersao" placeholder="Vers&atilde;o (vazio = autom&aacute;tica)" size="20">
         <input id="ctLink" placeholder="Link do catalogo.zip no Drive" size="34">
         <input id="ctNotas" placeholder="O que mudou (opcional)" size="30">
         <button type="button" class="verde" id="btnPubCat">Publicar cat&aacute;logo</button>
@@ -259,7 +259,7 @@ var infoAtual = null;
 function carregarCat() {
   google.script.run.withSuccessHandler(function (i) {
     $('catResumo').innerHTML = i.versao
-      ? 'Cat&aacute;logo publicado: <b>' + esc(i.versao) + '</b>' + (i.notas ? ' &middot; ' + esc(i.notas) : '') + ' &middot; os aparelhos baixam ao abrir o app'
+      ? 'Cat&aacute;logo publicado: <b>' + esc(i.versao === 'auto' ? 'autom&aacute;tico (' + (i.atual || '?') + ')' : i.versao) + '</b>' + (i.notas ? ' &middot; ' + esc(i.notas) : '') + ' &middot; os aparelhos baixam ao abrir o app'
       : 'Nenhum cat&aacute;logo publicado (o app usa o que veio dentro do APK).';
     if (i.versao) { $('ctVersao').value = i.versao; $('ctLink').value = i.link; $('ctNotas').value = i.notas; }
   }).withFailureHandler(falha).lerCatalogo(CHAVE);

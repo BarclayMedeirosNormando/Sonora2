@@ -94,7 +94,7 @@ def titulo_chave(titulo, versao):
     return base + ("|" + "|".join(sorted(set(marcas))) if marcas else "")
 
 
-def construir(cache_path, saida, max_artistas, usar_rede, correcoes_path):
+def construir(cache_path, saida, max_artistas, usar_rede, correcoes_path, refazer=False):
     saida = Path(saida)
     saida.mkdir(parents=True, exist_ok=True)
     corr = ler_correcoes(correcoes_path)
@@ -154,12 +154,14 @@ def construir(cache_path, saida, max_artistas, usar_rede, correcoes_path):
     arq = saida / "artistas.json"
     banco = json.loads(arq.read_text(encoding="utf-8")) if arq.exists() else {}
     pendentes = [{"chave": k, "nome": nome_exibicao[k].most_common(1)[0][0], "faixas": n}
-                 for k, n in por_artista.most_common() if k not in banco]
+                 for k, n in por_artista.most_common()
+                 if k not in banco
+                 or (refazer and banco[k].get("status") in ("nao-achado", "sem-foto"))]
     print(f"[3/7] Artistas: {len(por_artista)} no total, {len(banco)} ja buscados, {len(pendentes)} novos")
     if usar_rede and pendentes:
         lote = pendentes[:max_artistas]
         print(f"      buscando {len(lote)} agora (Ctrl+C para parar; o que ja foi feito fica salvo)\n")
-        ba.processar(lote, saida, banco)
+        ba.processar(lote, saida, banco, refazer)
     elif pendentes:
         print("      (--sem-rede: pulando a busca)")
 
@@ -233,13 +235,15 @@ def main():
     ap.add_argument("--saida", default="saida")
     ap.add_argument("--max-artistas", type=int, default=300, help="maximo de artistas novos buscados por rodada")
     ap.add_argument("--sem-rede", action="store_true")
+    ap.add_argument("--refazer-falhas", action="store_true",
+                    help="tenta de novo artistas marcados sem-foto/nao-achado (use quando a rede falhou)")
     ap.add_argument("--correcoes", default="correcoes.csv")
     a = ap.parse_args()
     try:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-    construir(a.cache, a.saida, a.max_artistas, not a.sem_rede, a.correcoes)
+    construir(a.cache, a.saida, a.max_artistas, not a.sem_rede, a.correcoes, a.refazer_falhas)
 
 
 if __name__ == "__main__":

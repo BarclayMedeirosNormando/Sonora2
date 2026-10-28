@@ -217,7 +217,7 @@ function versao_(p) {
   const r = { ok: true, status: reg ? reg[1] : STATUS_AGUARDANDO, versao: info.versao, build: build_(info.versao) };
   const cat = infoCatalogo_();
   if (r.status === STATUS_LIBERADO && cat.zipId) {
-    r.catVersao = cat.versao;
+    r.catVersao = versaoCatalogo_(cat);
     r.catUrl = 'https://drive.usercontent.google.com/download?id=' + cat.zipId + '&export=download&confirm=t';
     r.catNotas = cat.notas;
   }
@@ -234,17 +234,32 @@ function infoCatalogo_() {
     notas: pr.getProperty('CAT_NOTAS') || '' };
 }
 
+/** Versao 'auto': usa a data de modificacao do catalogo.zip no Drive (trocar o arquivo ja publica). */
+function versaoCatalogo_(cat) {
+  if (cat.versao !== 'auto') return cat.versao;
+  const cache = CacheService.getScriptCache();
+  const k = 'catver_' + cat.zipId;
+  const guardada = cache.get(k);
+  if (guardada) return guardada;
+  let v = 'auto';
+  try {
+    const d = DriveApp.getFileById(cat.zipId).getLastUpdated();
+    v = Utilities.formatDate(d, FUSO, 'yyyy-MM-dd_HHmm');
+  } catch (e) { /* sem permissao: mantem 'auto' */ }
+  cache.put(k, v, 60);
+  return v;
+}
+
 function lerCatalogo(chave) {
   verificarChave_(chave);
   const c = infoCatalogo_();
-  return { versao: c.versao, link: c.zipId ? 'https://drive.google.com/file/d/' + c.zipId + '/view' : '', notas: c.notas };
+  return { versao: c.versao, atual: c.zipId ? versaoCatalogo_(c) : '', link: c.zipId ? 'https://drive.google.com/file/d/' + c.zipId + '/view' : '', notas: c.notas };
 }
 
 /** versao = texto livre (ex.: 2026-10-28); link = link do catalogo.zip no Drive. */
 function publicarCatalogo(chave, versao, link, notas) {
   verificarChave_(chave);
-  versao = limpar_(versao, 30);
-  if (!versao) throw new Error('Informe a versao do catalogo');
+  versao = limpar_(versao, 30) || 'auto';
   const m = /[-\w]{25,}/.exec(String(link || ''));
   if (!m) throw new Error('Link do catalogo invalido');
   const pr = PropertiesService.getScriptProperties();

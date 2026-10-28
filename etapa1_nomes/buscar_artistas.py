@@ -30,6 +30,7 @@ from nomes import chave
 UA = "Sonora2/0.1 (barclaymedeiros@gmail.com)"  # MusicBrainz exige identificacao
 PAUSA_MB = 1.1       # MusicBrainz: no maximo 1 consulta por segundo
 PAUSA_DEEZER = 0.3   # Deezer: ~50 consultas por 5 s
+FALHAS_REDE = 0      # conta consultas que falharam por rede (sem internet, DNS, bloqueio)
 
 
 def http_get(url, binario=False, tentativas=3):
@@ -50,6 +51,9 @@ def http_get(url, binario=False, tentativas=3):
             ultimo = e
             time.sleep(2 * (i + 1))
     print(f"   ! falha em {url[:80]}: {ultimo}")
+    global FALHAS_REDE
+    if not isinstance(ultimo, urllib.error.HTTPError):
+        FALHAS_REDE += 1
     return None
 
 
@@ -134,8 +138,13 @@ def processar(artistas, saida, banco, refazer=False):
             if k in banco and not (refazer and banco[k].get("status") in ("nao-achado", "sem-foto")):
                 continue
             reg = dict(a)
+            antes = FALHAS_REDE
             mb = buscar_musicbrainz(a["nome"], k)
             dz = buscar_deezer(a["nome"], k)
+            if FALHAS_REDE > antes:
+                # sem rede para esse artista: nao grava, para tentar de novo na proxima rodada
+                print(f"[{i}/{len(artistas)}] {a['nome']:30} adiado (falha de rede)")
+                continue
             reg.update(mb or {})
             if mb and not mb.get("mb_nome"):
                 mb = None
