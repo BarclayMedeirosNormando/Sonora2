@@ -25,18 +25,23 @@ class _ShellState extends State<Shell> {
     super.initState();
     // procura versao nova sem travar a abertura do app
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final info = await verificarAtualizacao();
-      if (info != null && mounted) mostrarAtualizacao(context, info);
+      if (mounted) verificarTudo(context, aoAtualizarCatalogo: _trocarCatalogo);
     });
+  }
+
+  late Catalogo _cat = widget.cat;
+
+  void _trocarCatalogo(Catalogo novo) {
+    if (mounted) setState(() => _cat = novo);
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         body: SafeArea(
           child: IndexedStack(index: _aba, children: [
-            AbaInicio(widget.cat),
-            AbaBuscar(widget.cat),
-            AbaBiblioteca(widget.cat),
+            AbaInicio(_cat, aoAtualizarCatalogo: _trocarCatalogo),
+            AbaBuscar(_cat),
+            AbaBiblioteca(_cat),
           ]),
         ),
         bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -63,7 +68,8 @@ class _ShellState extends State<Shell> {
 
 class AbaInicio extends StatelessWidget {
   final Catalogo cat;
-  const AbaInicio(this.cat, {super.key});
+  final void Function(Catalogo) aoAtualizarCatalogo;
+  const AbaInicio(this.cat, {super.key, required this.aoAtualizarCatalogo});
 
   String get _saudacao {
     final h = DateTime.now().hour;
@@ -86,7 +92,7 @@ class AbaInicio extends StatelessWidget {
                     const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
           ),
           GestureDetector(
-            onTap: () => verificarManual(context),
+            onTap: () => verificarTudo(context, manual: true, aoAtualizarCatalogo: aoAtualizarCatalogo),
             child: const Padding(
               padding: EdgeInsets.all(6),
               child: Text('v$versaoApp',

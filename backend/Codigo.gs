@@ -215,11 +215,50 @@ function versao_(p) {
   const reg = lerMapa_()[id];
   const info = infoAtualizacao_();
   const r = { ok: true, status: reg ? reg[1] : STATUS_AGUARDANDO, versao: info.versao, build: build_(info.versao) };
+  const cat = infoCatalogo_();
+  if (r.status === STATUS_LIBERADO && cat.zipId) {
+    r.catVersao = cat.versao;
+    r.catUrl = 'https://drive.usercontent.google.com/download?id=' + cat.zipId + '&export=download&confirm=t';
+    r.catNotas = cat.notas;
+  }
   if (r.status === STATUS_LIBERADO && info.apkId) {
     r.url = 'https://drive.usercontent.google.com/download?id=' + info.apkId + '&export=download&confirm=t';
     r.notas = info.notas;
   }
   return r;
+}
+
+function infoCatalogo_() {
+  const pr = PropertiesService.getScriptProperties();
+  return { versao: pr.getProperty('CAT_VERSAO') || '', zipId: pr.getProperty('CAT_ZIP_ID') || '',
+    notas: pr.getProperty('CAT_NOTAS') || '' };
+}
+
+function lerCatalogo(chave) {
+  verificarChave_(chave);
+  const c = infoCatalogo_();
+  return { versao: c.versao, link: c.zipId ? 'https://drive.google.com/file/d/' + c.zipId + '/view' : '', notas: c.notas };
+}
+
+/** versao = texto livre (ex.: 2026-10-28); link = link do catalogo.zip no Drive. */
+function publicarCatalogo(chave, versao, link, notas) {
+  verificarChave_(chave);
+  versao = limpar_(versao, 30);
+  if (!versao) throw new Error('Informe a versao do catalogo');
+  const m = /[-\w]{25,}/.exec(String(link || ''));
+  if (!m) throw new Error('Link do catalogo invalido');
+  const pr = PropertiesService.getScriptProperties();
+  pr.setProperty('CAT_VERSAO', versao);
+  pr.setProperty('CAT_ZIP_ID', m[0]);
+  pr.setProperty('CAT_NOTAS', limpar_(notas, 300));
+  return { ok: true };
+}
+
+function removerCatalogo(chave) {
+  verificarChave_(chave);
+  const pr = PropertiesService.getScriptProperties();
+  ['CAT_VERSAO', 'CAT_ZIP_ID', 'CAT_NOTAS'].forEach(function (k) { pr.deleteProperty(k); });
+  return { ok: true };
 }
 
 function lerAtualizacao(chave) {

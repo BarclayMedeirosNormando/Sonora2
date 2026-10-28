@@ -92,6 +92,17 @@
         <button type="button" class="verm" id="btnRemoverAt">Remover</button>
       </div>
     </div>
+    <div class="card" id="cardCat">
+      <h2>Cat&aacute;logo de m&uacute;sicas</h2>
+      <div class="suave" id="catResumo" style="margin-bottom:8px"></div>
+      <div class="barra">
+        <input id="ctVersao" placeholder="Vers&atilde;o (ex.: 2026-10-28)" size="16">
+        <input id="ctLink" placeholder="Link do catalogo.zip no Drive" size="34">
+        <input id="ctNotas" placeholder="O que mudou (opcional)" size="30">
+        <button type="button" class="verde" id="btnPubCat">Publicar cat&aacute;logo</button>
+        <button type="button" class="verm" id="btnRemCat">Remover</button>
+      </div>
+    </div>
     <div class="barra">
       <select id="fStatus">
         <option value="">Todos</option><option>Aguardando</option><option>Liberado</option><option>Bloqueado</option><option value="__desat">Desatualizados</option>
@@ -245,6 +256,24 @@ function resumoAtual(info) {
     : 'Nenhuma atualiza&ccedil;&atilde;o publicada.';
 }
 var infoAtual = null;
+function carregarCat() {
+  google.script.run.withSuccessHandler(function (i) {
+    $('catResumo').innerHTML = i.versao
+      ? 'Cat&aacute;logo publicado: <b>' + esc(i.versao) + '</b>' + (i.notas ? ' &middot; ' + esc(i.notas) : '') + ' &middot; os aparelhos baixam ao abrir o app'
+      : 'Nenhum cat&aacute;logo publicado (o app usa o que veio dentro do APK).';
+    if (i.versao) { $('ctVersao').value = i.versao; $('ctLink').value = i.link; $('ctNotas').value = i.notas; }
+  }).withFailureHandler(falha).lerCatalogo(CHAVE);
+}
+$('btnPubCat').addEventListener('click', function () {
+  var b = this; b.disabled = true;
+  google.script.run.withSuccessHandler(function () { b.disabled = false; carregarCat(); })
+    .withFailureHandler(function (e) { b.disabled = false; falha(e); })
+    .publicarCatalogo(CHAVE, $('ctVersao').value, $('ctLink').value, $('ctNotas').value);
+});
+$('btnRemCat').addEventListener('click', function () {
+  google.script.run.withSuccessHandler(function () { $('ctVersao').value = $('ctLink').value = $('ctNotas').value = ''; carregarCat(); })
+    .withFailureHandler(falha).removerCatalogo(CHAVE);
+});
 function carregarAtual() {
   google.script.run.withSuccessHandler(function (i) { infoAtual = i; resumoAtual(i); if (i.versao) { $('atVersao').value = i.versao; $('atLink').value = i.link; $('atNotas').value = i.notas; } }).withFailureHandler(falha).lerAtualizacao(CHAVE);
 }
@@ -323,6 +352,7 @@ $('modal').addEventListener('click', function (ev) { if (ev.target === $('modal'
 
 $('btnAtualizar').addEventListener('click', carregar);
 carregarAtual();
+carregarCat();
 carregar();
 timer = setInterval(function () { if (!document.hidden) carregar(); }, 60000);
 </script>

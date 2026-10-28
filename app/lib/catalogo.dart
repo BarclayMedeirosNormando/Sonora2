@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'catalogo_local.dart';
 
 class Genero {
   final String nome;
@@ -62,6 +63,7 @@ class Catalogo {
 
   /// Catalogo carregado (usado para descobrir o genero de uma musica ao registrar o play).
   static Catalogo? atual;
+  static bool _usandoLocal = true;
   Map<String, String>? _generoPorArtista;
 
   static String generoDe(String artistaId) {
@@ -89,8 +91,7 @@ class Catalogo {
   /// Busca faixas pelo titulo (ou "titulo artista"), ignorando acentos.
   Future<List<Faixa>> buscarFaixas(String consulta, {int limite = 50}) async {
     if (_indiceFaixas == null) {
-      final txt =
-          await rootBundle.loadString('assets/catalogo/faixas_busca.json');
+      final txt = await _ler('faixas_busca.json');
       _porId = {for (final a in artistas) a.id: a};
       _indiceFaixas = (jsonDecode(txt) as List).map((e) {
         final l = e as List;
@@ -116,9 +117,25 @@ class Catalogo {
     return r;
   }
 
+  /// Le do catalogo baixado (se houver) e, se nao houver ou estiver ruim, do que veio no APK.
+  static Future<String> _ler(String rel) async {
+    final local = _usandoLocal ? await lerLocal(rel) : null;
+    if (local != null) return local;
+    return rootBundle.loadString('assets/catalogo/$rel');
+  }
+
   static Future<Catalogo> carregar() async {
-    final txt = await rootBundle.loadString('assets/catalogo/indice.json');
-    final j = jsonDecode(txt) as Map<String, dynamic>;
+    Map<String, dynamic> j;
+    try {
+      final local = await lerLocal('indice.json');
+      if (local == null) throw 'sem catalogo baixado';
+      j = jsonDecode(local) as Map<String, dynamic>;
+      _usandoLocal = true;
+    } catch (_) {
+      final txt = await rootBundle.loadString('assets/catalogo/indice.json');
+      j = jsonDecode(txt) as Map<String, dynamic>;
+      _usandoLocal = false;
+    }
     return atual = Catalogo(
       (j['generos'] as List)
           .map((e) => Genero.fromJson(e as Map<String, dynamic>))
@@ -133,8 +150,7 @@ class Catalogo {
       artistas.where((a) => a.genero == genero).toList();
 
   Future<List<Faixa>> faixasDe(ArtistaResumo a) async {
-    final txt =
-        await rootBundle.loadString('assets/catalogo/artistas/${a.id}.json');
+    final txt = await _ler('artistas/${a.id}.json');
     final j = jsonDecode(txt) as Map<String, dynamic>;
     return (j['faixas'] as List).map((e) {
       final m = e as Map<String, dynamic>;

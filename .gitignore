@@ -15,3 +15,7 @@ app/.idea/
 *.apk
 *.log
 *.pyc
+
+# zips e APKs gerados localmente
+catalogos/
+apks/

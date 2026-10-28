@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'biblioteca_usuario.dart';
 import 'catalogo.dart';
@@ -36,11 +37,20 @@ Widget capa(String texto,
   );
   final Widget conteudo = foto == null
       ? reserva
-      : Image.asset('assets/catalogo/fotos/$foto',
-          width: tamanho,
-          height: tamanho,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => reserva);
+      : foto.startsWith('http')
+          ? CachedNetworkImage(
+              imageUrl: foto,
+              width: tamanho,
+              height: tamanho,
+              fit: BoxFit.cover,
+              memCacheWidth: tamanho.isFinite ? (tamanho * 2).round() : null,
+              placeholder: (_, __) => reserva,
+              errorWidget: (_, __, ___) => reserva)
+          : Image.asset('assets/catalogo/fotos/$foto',
+              width: tamanho,
+              height: tamanho,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => reserva);
   return ClipRRect(borderRadius: BorderRadius.circular(raio), child: conteudo);
 }
 

@@ -7,7 +7,9 @@ Gera saida/app/:
   artistas/<slug>.json  faixas de cada artista (carrega ao abrir o artista)
   faixas_busca.json     indice compacto de todas as faixas [id, titulo, versao, artistaId] (busca por musica)
   sem_artista.json      faixas que o nome nao permitiu identificar (por pasta)
-  fotos/                copia das fotos dos artistas
+  catalogo.zip          tudo acima compactado (e o que se publica no painel)
+As fotos NAO vao no catalogo: cada artista guarda o endereco (Deezer) e o app baixa a foto
+na primeira vez que ela aparece, guardando no celular.
 So entram faixas principais (repetidas ficam de fora).
 """
 import argparse
@@ -15,6 +17,7 @@ import json
 import shutil
 import sqlite3
 import sys
+import zipfile
 from pathlib import Path
 
 OUTROS = "Outros"
@@ -39,7 +42,12 @@ def main():
     if out.exists():
         shutil.rmtree(out)
     (out / "artistas").mkdir(parents=True)
-    (out / "fotos").mkdir()
+    urls = {}
+    arq_art = saida / "artistas.json"
+    if arq_art.exists():
+        for k, v in json.loads(arq_art.read_text(encoding="utf-8")).items():
+            if v.get("foto_url"):
+                urls[k] = v["foto_url"]
 
     faixas = {}
     for f in db.execute("""select id, titulo, versao, convidados, artista_chave, pasta
@@ -54,9 +62,8 @@ def main():
             continue
         g = a["genero"] or OUTROS
         foto = None
-        if a["foto"] and (saida / "fotos" / a["foto"]).exists():
-            shutil.copyfile(saida / "fotos" / a["foto"], out / "fotos" / a["foto"])
-            foto, n_fotos = a["foto"], n_fotos + 1
+        if a["foto"] and urls.get(a["chave"]):
+            foto, n_fotos = urls[a["chave"]], n_fotos + 1
         s = slug(a["chave"])
         artistas.append({"id": s, "nome": a["nome"], "genero": g, "foto": foto, "faixas": len(fs)})
         generos.setdefault(g, {"nome": g, "artistas": 0, "faixas": 0})
@@ -88,7 +95,13 @@ def main():
         sem.setdefault(f["pasta"] or "", []).append({"id": f["id"], "arquivo": f["arquivo"]})
     (out / "sem_artista.json").write_text(json.dumps(sem, ensure_ascii=False), encoding="utf-8")
 
-    print(f"{len(artistas)} artistas, {len(generos)} generos, {n_fotos} fotos")
+    zpath = saida / "catalogo.zip"
+    with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+        for p in sorted(out.rglob("*")):
+            if p.is_file():
+                z.write(p, p.relative_to(out).as_posix())
+    print(f"{len(artistas)} artistas, {len(generos)} generos, {n_fotos} fotos (por endereco)")
+    print(f"Zip: {zpath} ({zpath.stat().st_size / 1e6:.1f} MB)")
     print(f"{sum(len(v) for v in sem.values())} faixas sem artista em {len(sem)} pastas")
     print(f"Pronto: {out}")
 
