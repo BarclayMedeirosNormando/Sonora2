@@ -2,7 +2,9 @@
 
 Fontes (sem chave, sem custo):
   - MusicBrainz  -> generos/tags, pais, tipo (pessoa/banda)
-  - Deezer       -> foto do artista
+  - Deezer       -> foto do artista (principal)
+  - TheAudioDB   -> foto do artista (reserva 1, quando o Deezer nao acha)
+  - Wikipedia    -> foto do artista (reserva 2, pt e depois en)
 
 Uso (na pasta etapa1_nomes, depois de rodar testar_nomes.py):
 
@@ -30,6 +32,8 @@ from nomes import chave
 UA = "Sonora2/0.1 (barclaymedeiros@gmail.com)"  # MusicBrainz exige identificacao
 PAUSA_MB = 1.1       # MusicBrainz: no maximo 1 consulta por segundo
 PAUSA_DEEZER = 0.3   # Deezer: ~50 consultas por 5 s
+PAUSA_AUDIODB = 2.0  # TheAudioDB (chave gratuita): limite baixo, vai devagar
+PAUSA_WIKI = 0.3
 FALHAS_REDE = 0      # conta consultas que falharam por rede (sem internet, DNS, bloqueio)
 
 
@@ -43,6 +47,8 @@ def http_get(url, binario=False, tentativas=3):
             return dados if binario else json.loads(dados.decode("utf-8"))
         except urllib.error.HTTPError as e:
             ultimo = e
+            if e.code == 404:                 # "nao encontrado": resposta normal (TheAudioDB), sem barulho
+                return None
             if e.code in (429, 503):          # limite de uso: espera e tenta de novo
                 time.sleep(5 * (i + 1))
                 continue
@@ -52,8 +58,8 @@ def http_get(url, binario=False, tentativas=3):
             time.sleep(2 * (i + 1))
     print(f"   ! falha em {url[:80]}: {ultimo}")
     global FALHAS_REDE
-    if not isinstance(ultimo, urllib.error.HTTPError):
-        FALHAS_REDE += 1
+    if not isinstance(ultimo, urllib.error.HTTPError) or ultimo.code in (429, 503):
+        FALHAS_REDE += 1      # rede ou servidor sobrecarregado: o artista sera tentado de novo depois
     return None
 
 
@@ -121,6 +127,55 @@ def buscar_deezer(nome, k):
             "deezer_id": a.get("id"), "foto_url": a.get("picture_big") or a.get("picture_medium")}
 
 
+CHAVES_AUDIODB = ("2", "123")   # chaves gratuitas de teste do TheAudioDB (tenta na ordem)
+PALAVRAS_MUSICA = ("singer", "band", "musician", "rapper", "duo", "composer", "vocal", "group",
+                   "songwriter", "guitarist", "pianist", "dj", "orchestra", "trio", "quartet",
+                   "cantor", "cantora", "banda", "músico", "musico", "compositor", "grupo",
+                   "dupla", "rapper", "instrumentista", "violonista", "pianista", "orquestra")
+
+
+NAO_ARTISTA = ("song", "single", "album", "film", "episode", "novel", "ep by",
+               "canção", "cancao", "música de", "filme", "episódio", "livro")
+
+
+def buscar_audiodb(nome, k):
+    """Fallback 1: TheAudioDB (foto do artista, sem cadastro com a chave de teste)."""
+    for chave_api in CHAVES_AUDIODB:
+        d = http_get(f"https://www.theaudiodb.com/api/v1/json/{chave_api}/search.php?s={urllib.parse.quote(nome)}")
+        time.sleep(PAUSA_AUDIODB)
+        if d is None:
+            continue
+        for a in d.get("artists") or []:
+            if chave(a.get("strArtist") or "") == k and a.get("strArtistThumb"):
+                return {"foto_url": a["strArtistThumb"], "foto_fonte": "theaudiodb",
+                        "audiodb_genero": a.get("strGenre") or None}
+        return None          # respondeu, mas nao achou
+    return None
+
+
+def buscar_wikipedia(nome, k):
+    """Fallback 2: Wikipedia (pt, depois en). So aceita pagina cuja descricao curta fala de musica."""
+    for lang in ("pt", "en"):
+        sufixos = ("", " (banda)", " (cantor)", " (cantora)") if lang == "pt" else ("", " (band)", " (singer)", " (musician)")
+        for suf in sufixos:
+            titulo = nome + suf
+            url = (f"https://{lang}.wikipedia.org/w/api.php?action=query&format=json&redirects=1"
+                   f"&prop=pageimages|description&piprop=thumbnail&pithumbsize=500"
+                   f"&titles={urllib.parse.quote(titulo)}")
+            d = http_get(url)
+            time.sleep(PAUSA_WIKI)
+            if not d:
+                continue
+            for p in (d.get("query", {}).get("pages") or {}).values():
+                thumb = (p.get("thumbnail") or {}).get("source")
+                desc = (p.get("description") or "").lower()
+                if any(w in desc for w in NAO_ARTISTA):      # musica, album, filme... nao e o artista
+                    continue
+                if thumb and any(w in desc for w in PALAVRAS_MUSICA):
+                    return {"foto_url": thumb, "foto_fonte": f"wikipedia-{lang}"}
+    return None
+
+
 def slug(k):
     return "".join(c if c.isalnum() else "_" for c in k)[:60]
 
@@ -141,6 +196,13 @@ def processar(artistas, saida, banco, refazer=False):
             antes = FALHAS_REDE
             mb = buscar_musicbrainz(a["nome"], k)
             dz = buscar_deezer(a["nome"], k)
+            if dz and dz.get("foto_url"):
+                dz["foto_fonte"] = "deezer"
+            else:
+                # Deezer nao tem foto: tenta TheAudioDB e depois Wikipedia
+                alt = buscar_audiodb(a["nome"], k) or buscar_wikipedia(a["nome"], k)
+                if alt:
+                    dz = {**(dz or {}), **alt}
             if FALHAS_REDE > antes:
                 # sem rede para esse artista: nao grava, para tentar de novo na proxima rodada
                 print(f"[{i}/{len(artistas)}] {a['nome']:30} adiado (falha de rede)")

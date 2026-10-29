@@ -68,6 +68,7 @@ def _limpar_basico(txt: str) -> str:
     txt = re.sub(r"\.mp3$", "", txt, flags=re.I)
     # "Can_t", "MC_s", "I_m" -> apostrofo
     txt = re.sub(r"(?<=[A-Za-z])_(?=(t|s|ll|re|ve|d|m)\b)", "'", txt)
+    txt = re.sub(r"(?<=\d)_(?=s\b)", "'", txt)       # 60_s -> 60's
     txt = re.sub(r"\b(feat|ft|jr|sr|dr|vol|part|pt)_", r"\1.", txt, flags=re.I)  # feat_ -> feat.
     txt = re.sub(r"(?<=[A-Z])_(?=[A-Z])", "/", txt)   # AC_DC -> AC/DC
     txt = re.sub(r"\s_\s", " / ", txt)               # "Bosco _ Vinicius" -> "Bosco / Vinicius"
@@ -104,7 +105,19 @@ def _artista_da_pasta(pasta: str | None) -> str | None:
     return None
 
 
-def reparar_nomes(faixas, pastas):
+# Lado direito que descreve a versao (e nao um artista): "Live", "Mono", "Take 2-Master Version"...
+_SO_VERSAO = re.compile(
+    r"^(live|mono|stereo|ao vivo|with\s.*|remaster\w*|.*\b(version|edit|mix|demo|take\s*\d+|acoustic|single)\b.*)$",
+    re.I)
+
+
+def _sem_traco(nome):
+    """'07 Titulo - Artista' (numero + espaco, sem traco depois do numero)."""
+    t = _RUIDO.sub("", _limpar_basico(nome))
+    return bool(re.match(r"^\d{1,3}\s+(?!-)\S", t)) and not re.match(r"^\d{1,3}\s*[-._)]", t)
+
+
+def reparar_nomes(faixas, pastas, artistas_ok=None):
     """Corrige dois erros do leitor, olhando a biblioteca inteira.
 
     1) "50 Cent - Candy Shop": o "50 " NAO e numero de faixa, e parte do nome.
@@ -149,9 +162,34 @@ def reparar_nomes(faixas, pastas):
             if dr <= 0.5 * len(lst) and dl >= 0.8 * len(lst):
                 pastas_inv.add(pid)
 
+    # 3) "07 Titulo - Artista": numero + espaco (sem traco) e o padrao de rips que gravam
+    #    Titulo - Artista. Vale quando uma parte relevante da pasta usa esse padrao.
+    tot_pasta = collections.Counter(f["paiId"] for f, _, _, _, _ in linhas)
+    sem_traco = {f["id"] for f, _, _, _, m in linhas if not m and _sem_traco(f["name"])}
+    n_st = collections.Counter(f["paiId"] for f, _, _, _, _ in linhas if f["id"] in sem_traco)
+    pastas_st = {p for p, n in n_st.items() if n >= 4 and n >= 0.3 * tot_pasta[p]}
+
     reparos, n_inv, n_num = {}, 0, 0
+    # Artistas "de confianca": lado esquerdo de arquivos no formato normal + os ja confirmados
+    # na internet (artistas_ok). Pastas com "NN X - Y" sao MISTAS (parte X=artista, parte Y=artista),
+    # entao a direcao e decidida arquivo por arquivo: so inverte quando o lado direito e um
+    # artista conhecido e o esquerdo nao.
+    conhecidos = {chave(a) for f, _, a, _, _ in linhas if f["id"] not in sem_traco} | set(artistas_ok or ())
+
     for f, t, a, b, manter in linhas:
         ka, kb = chave(a), chave(b)
+        if f["id"] in sem_traco and f["paiId"] in pastas_st:
+            if _SO_VERSAO.match(b):          # "Titulo - Live", "Titulo - Mono": nao ha artista no nome
+                reparos[f["id"]] = (a, False)
+                continue
+            if kb in conhecidos and ka not in conhecidos:
+                # "Titulo - Artista (ft. X)" -> "Artista feat. X - Titulo"
+                m_ft = re.match(r"^(.*?)\s*[\(\[]\s*(?:feat\.?|ft\.?|featuring)\s+(.*?)[\)\]]\s*$", b, re.I)
+                b2 = f"{m_ft.group(1)} feat. {m_ft.group(2)}" if m_ft else b
+                reparos[f["id"]] = (f"{b2} - {a}", False)
+                n_inv += 1
+                continue
+            # sem evidencia (ou os dois lados conhecidos): deixa como esta e segue as outras regras
         inverter = f["paiId"] in pastas_inv or (esq[kb] >= 2 and esq[ka] == 1)
         if inverter:
             esq_txt, dir_txt = _SEP.split(t.strip(" -"), maxsplit=1)
@@ -190,7 +228,9 @@ def ler_nome(arquivo: str, pasta: str | None = None, pasta_avo: str | None = Non
         m = re.fullmatch(r"(.+?)\s*-\s*(.+)|(.+?)\s+-\s*(.+)", t_sem_versao)
         if m and t_sem_versao.count("-") == 1:
             a, b = (m.group(1), m.group(2)) if m.group(1) else (m.group(3), m.group(4))
-            if _artista_valido(a) and b.strip():
+            # "Whisky a Go-Go", "Meia-Noite": palavra composta, nao "Artista-Titulo"
+            composta = re.search(r"\S-\S", t_sem_versao) and " " not in b.strip()
+            if _artista_valido(a) and b.strip() and not composta:
                 artista, titulo = a.strip(), b.strip()
                 r.confianca, r.origem = "media", "arquivo-sem-espaco"
         if artista is None:

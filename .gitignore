@@ -23,3 +23,13 @@ etapa1_nomes/cache_anterior*.json
 config_local.ps1
 etapa1_nomes/cache_novo.json
 
+# pip instalou o mutagen aqui dentro (Python sem prefixo): nao subir
+Lib/
+Scripts/
+share/
+
+# registros dos scripts de renomear/organizar (tem caminhos locais)
+renomear_log.csv
+organizar_log.csv
+plano_organizar.csv
+

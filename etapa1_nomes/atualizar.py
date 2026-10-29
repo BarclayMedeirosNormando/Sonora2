@@ -106,7 +106,11 @@ def construir(cache_path, saida, max_artistas, usar_rede, correcoes_path, refaze
     faixas = [x for x in arvore if x["tipo"] == "faixa"]
     print(f"[1/7] Cache: {len(faixas)} faixas em {len(pastas)} pastas")
 
-    reparos, resumo = reparar_nomes(faixas, pastas)
+    # artistas ja confirmados na internet (MusicBrainz): ajudam a decidir "Titulo - Artista" x "Artista - Titulo"
+    _arq_art = saida / "artistas.json"
+    _banco = json.loads(_arq_art.read_text(encoding="utf-8")) if _arq_art.exists() else {}
+    artistas_ok = {k for k, v in _banco.items() if v.get("status") == "ok"}
+    reparos, resumo = reparar_nomes(faixas, pastas, artistas_ok)
     print(f"      Reparos de nome: {resumo['invertidas']} invertidas (Titulo - Artista), "
           f"{resumo['numero_no_nome']} com numero no nome do artista (ex.: 50 Cent)")
 

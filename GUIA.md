@@ -9,15 +9,28 @@
 - **Drive**: pasta `Musicas\Sonora2_APKs` guarda o `catalogo.zip` e os APKs (acesso "qualquer pessoa com o link").
 
 ## 1. Entrou musica nova (nao precisa de APK)
-1. Coloque os MP3 na pasta da biblioteca no Drive (nome `Artista - Titulo.mp3`).
-2. Rode:
+A biblioteca do app e a pasta **`Musicas\Sonora_Musicas`** do Drive (ID `1Pe5LhFlakZDsW3ixrUeJLPn_Q7Ux49WH`).
+So entra no app o que estiver la dentro. A pasta antiga `Musicas\Sonora` ficou de arquivo, fora do app.
+
+1. Prepare as musicas em uma pasta de trabalho e padronize os nomes:
+   ```
+   py renomear_musicas.py "<pasta com as musicas>"
+   ```
+   (pergunta artista e album; deixa `NN - Artista - Titulo.mp3`; `--desfazer` volta a ultima).
+2. Quando estiverem certas, mova a pasta (Artista - Album) para `Sonora_Musicas`
+   (de preferencia dentro de `Genero\Artista\`, ex.: `Rap\Racionais MCs\Racionais MCs - Album`).
+3. Rode:
    ```
    cd C:\ProjetosClaude\Sonora2
    powershell -ExecutionPolicy Bypass -File .\atualizar_musicas.ps1
    ```
    Ele gera o cache no Drive, baixa, identifica artistas/generos/fotos, monta o catalogo e copia o
    `catalogo.zip` para a pasta do Drive.
-3. O app mostra "Musicas novas disponiveis" ao abrir. So toca em **Atualizar agora**.
+4. O app mostra "Musicas novas disponiveis" ao abrir. So toca em **Atualizar agora**.
+- A pasta `Sonora_Musicas` precisa estar como "qualquer pessoa com o link pode visualizar" (o app toca direto do Drive)
+  e dentro de `Musicas` (a conta de servico `sonora-backend` ja tem acesso a `Musicas`).
+- Trocar a pasta da biblioteca (feito uma vez, no Cloud Run):
+  `gcloud run services update sonora-backend --project sonora-506315 --region us-central1 --update-env-vars PASTA_BIBLIOTECA_ID=<ID da pasta>`
 - Se o Deezer estiver bloqueado na rede (erro `getaddrinfo failed`), os artistas ficam sem foto. Em outra rede, rode
   `.\atualizar_musicas.ps1 -RefazerFotos`.
 - Primeira vez: no painel, card **Catalogo de musicas**, cole o link do `catalogo.zip` do Drive, deixe a versao
