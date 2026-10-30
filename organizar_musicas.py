@@ -38,6 +38,7 @@ except ImportError:
 
 SEM_TAGS = False
 ONLINE = True
+BUSCAR_ARTISTA = False
 CONHECIDOS = set()   # chaves de artistas ja confirmados (etapa1_nomes/saida/artistas.json)
 
 
@@ -76,6 +77,63 @@ def corrigir_ordem(stem):
         elif fa and fb:
             print(f"  (duvida: '{a}' e '{b}' existem como artista no Deezer; deixei '{a}' como artista)")
     return stem, False
+
+
+_CACHE_TIT = {}
+
+
+def artista_por_titulo(titulo):
+    """Pergunta ao Deezer quem canta uma musica so pelo titulo. Devolve o nome do artista ou None se houver duvida."""
+    global ONLINE
+    k = chave(titulo)
+    if len(k) < 3:
+        return None
+    if k in _CACHE_TIT:
+        return _CACHE_TIT[k]
+    import json
+    import time
+    import urllib.parse
+    import urllib.request
+    resp = None
+    try:
+        q = urllib.parse.quote(f'track:"{titulo}"')
+        with urllib.request.urlopen(f"https://api.deezer.com/search/track?limit=25&q={q}", timeout=10) as r:
+            dados = json.loads(r.read().decode("utf-8"))
+        time.sleep(0.25)
+        por_artista = {}
+        for d in dados.get("data", []):
+            nome = (d.get("artist") or {}).get("name") or ""
+            if chave(d.get("title_short") or d.get("title") or "") != k or not nome or chave(nome) in ("various artists", "varios artistas"):
+                continue
+            por_artista[nome] = max(por_artista.get(nome, 0), d.get("rank") or 0)
+        ordem = sorted(por_artista.items(), key=lambda x: -x[1])
+        if len(ordem) == 1 or (len(ordem) > 1 and ordem[0][1] >= 2 * max(ordem[1][1], 1)):
+            resp = ordem[0][0]
+    except Exception:
+        ONLINE = False
+        print("(Deezer fora do ar nesta rede: nao deu para sugerir artistas)")
+        return None
+    _CACHE_TIT[k] = resp
+    return resp
+
+
+def pastas_existentes(destino):
+    """Pastas de artista que ja existem no destino (direto ou dentro de uma pasta de genero), por chave."""
+    achadas = {}
+    if not destino.is_dir():
+        return achadas
+    try:
+        nivel1 = [d for d in destino.iterdir() if d.is_dir() and not d.name.startswith("_")]
+        for d in nivel1:
+            achadas.setdefault(chave(d.name), d)
+        for d in nivel1:                      # artista dentro de pasta de genero
+            for sub in d.iterdir():
+                if sub.is_dir():
+                    achadas.setdefault(chave(sub.name), sub)
+    except OSError:
+        pass
+    achadas.pop("", None)
+    return achadas
 
 
 _CACHE_DZ = {}
@@ -153,6 +211,8 @@ KW = re.compile(r"ao vivo|live|remaster(?:ed)?|remix|mix|edit|radio|acoustic|ac[
 
 def so_versao(txt):
     """'Ao Vivo', '2013 Remaster', 'Remix' -> True (descreve a versao). 'Atitude 67 (Ao Vivo)' -> False (e um nome)."""
+    if "(" not in (txt or "") and re.search(r"\b(vers[aã]o|version|remaster(?:ed)?|remix|mix|edit)\s*$", txt or "", re.I):
+        return True                       # 'Album Version', 'Band Version', 'Radio Edit'...
     resto = KW.sub(" ", txt or "")
     return not re.search(r"[^\W\d_]", resto)
 
@@ -171,6 +231,8 @@ def tirar_album(stem):
     if i <= 0 or fundo != 0:
         return stem, None
     conteudo, prefixo = s[i + 1:-1].strip(), s[:i].rstrip()
+    if prefixo.endswith(","):
+        return stem, None                 # 'No Pain, (No Gain)': parenteses fazem parte do titulo
     if not conteudo or not prefixo or so_versao(conteudo) or re.match(r"(feat|ft)\b", conteudo, re.I):
         return stem, None
     return prefixo, conteudo
@@ -249,6 +311,29 @@ def planejar(origem, destino):
             for n, l in enumerate(sorted(grupo, key=lambda x: x["origem"].name.casefold()), 1):
                 l["faixa"] = n
 
+    if BUSCAR_ARTISTA and ONLINE:
+        sem = [l for l in linhas if not l["artista"]]
+        if sem:
+            print(f"Procurando o artista de {len(sem)} musicas pelo titulo (Deezer)...", flush=True)
+        for l in sem:
+            tit = limpar(re.sub(r"^\s*\d{1,3}\s*[-._)]?\s+", "", l["origem"].stem.replace("_", " ")))
+            if not tit or re.search(r"\s[-–—]\s", tit) or not ONLINE:
+                continue
+            art = artista_por_titulo(tit)
+            if art:
+                l["artista"] = l["artista_arq"] = principal(art)
+                l["titulo"], l["fonte"], l["sugerido"] = tit, "deezer-titulo", True
+
+    existentes = pastas_existentes(destino)
+    reaproveitadas = set()
+
+    def pasta_artista(art):
+        achada = existentes.get(chave(art))
+        if achada:
+            reaproveitadas.add(chave(art))
+            return achada
+        return destino / limpar(art)
+
     ocupados = set()
     for l in linhas:
         ext = l["origem"].suffix.lower()
@@ -260,10 +345,10 @@ def planejar(origem, destino):
             arq = l["artista_arq"]
             if l["album"]:
                 nome = f"{l['faixa']:02d} - {arq} - {tit}{ext}"
-                l["destino"] = destino / limpar(art) / limpar(f"{art} - {l['album']}") / limpar(nome)
+                l["destino"] = pasta_artista(art) / limpar(f"{art} - {l['album']}") / limpar(nome)
             else:
-                l["destino"] = destino / limpar(art) / (limpar(f"{arq} - {tit}") + ext)
-            l["situacao"] = "ok"
+                l["destino"] = pasta_artista(art) / (limpar(f"{arq} - {tit}") + ext)
+            l["situacao"] = "sugerido" if l.get("sugerido") else "ok"
         # nome repetido: (2), (3)...
         d = l["destino"]
         n = 1
@@ -328,10 +413,15 @@ def main():
                     help="nao le as tags dos MP3 (rapido; use quando a pasta esta no Drive em nuvem)")
     ap.add_argument("--sem-internet", action="store_true",
                     help="nao consulta o Deezer para decidir 'Artista - Titulo' x 'Titulo - Artista'")
+    ap.add_argument("--buscar-artista", action="store_true",
+                    help="para musicas sem artista no nome, pergunta ao Deezer quem canta (so pelo titulo) e SUGERE")
+    ap.add_argument("--incluir-sugeridos", action="store_true",
+                    help="com --aplicar, move tambem as musicas sugeridas pelo Deezer (por padrao ficam paradas)")
     a = ap.parse_args()
-    global SEM_TAGS, ONLINE
+    global SEM_TAGS, ONLINE, BUSCAR_ARTISTA
     SEM_TAGS = a.sem_tags
     ONLINE = not a.sem_internet
+    BUSCAR_ARTISTA = a.buscar_artista
     if a.desfazer:
         return desfazer()
     if not a.origem:
@@ -359,7 +449,14 @@ def main():
 
     c = Counter(l["situacao"] for l in linhas)
     artistas = {chave(l["artista"]) for l in linhas if l["artista"]}
-    print(f"{len(linhas)} musicas | {c['ok']} identificadas ({len(artistas)} artistas) | {c['revisar']} para revisar")
+    print(f"{len(linhas)} musicas | {c['ok']} identificadas ({len(artistas)} artistas) | {c['revisar']} para revisar"
+          + (f" | {c['sugerido']} sugeridas pelo Deezer" if c["sugerido"] else ""))
+    sug = [l for l in linhas if l["situacao"] == "sugerido"]
+    if sug:
+        print("\nSugestoes do Deezer (so pelo titulo; CONFIRA, podem estar erradas):")
+        for l in sug:
+            print(f"  {l['origem'].name}  ->  {l['artista']}")
+        print("Elas so sao movidas com --incluir-sugeridos.\n")
     novos = sorted({l["artista"] for l in linhas if l["artista"] and chave(l["artista"]) not in CONHECIDOS})
     if novos:
         print(f"{len(novos)} artistas ainda desconhecidos pelo Sonora (confira se nao sao titulos): "
@@ -375,8 +472,8 @@ def main():
         return
     feitos = []
     for l in linhas:
-        if l["situacao"] == "revisar":
-            continue                      # nao identificado: fica na pasta de origem
+        if l["situacao"] == "revisar" or (l["situacao"] == "sugerido" and not a.incluir_sugeridos):
+            continue                      # nao identificado (ou so sugerido): fica na pasta de origem
         l["destino"].parent.mkdir(parents=True, exist_ok=True)
         if a.copiar:
             shutil.copy2(l["origem"], l["destino"])
@@ -387,6 +484,8 @@ def main():
     print(f"\nPronto: {len(feitos)} arquivos {'copiados' if a.copiar else 'movidos'} para {destino}")
     if not a.copiar:
         print("Para voltar atras: py organizar_musicas.py --desfazer")
+    if c["sugerido"] and not a.incluir_sugeridos:
+        print(f"{c['sugerido']} sugestao(oes) do Deezer NAO foram movidas (use --incluir-sugeridos se estiverem certas).")
     if c["revisar"]:
         print(f"{c['revisar']} arquivo(s) NAO foram movidos (ficaram na pasta de origem): renomeie com renomear_musicas.py ou me mande a lista.")
 

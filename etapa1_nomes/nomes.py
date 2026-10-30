@@ -70,6 +70,7 @@ def _limpar_basico(txt: str) -> str:
     txt = re.sub(r"(?<=[A-Za-z])_(?=(t|s|ll|re|ve|d|m)\b)", "'", txt)
     txt = re.sub(r"(?<=\d)_(?=s\b)", "'", txt)       # 60_s -> 60's
     txt = re.sub(r"\b(feat|ft|jr|sr|dr|vol|part|pt)_", r"\1.", txt, flags=re.I)  # feat_ -> feat.
+    txt = re.sub(r"\b([OD])_(?=[A-Z][a-z])", r"\1'", txt)   # O_Connor -> O'Connor
     txt = re.sub(r"(?<=[A-Z])_(?=[A-Z])", "/", txt)   # AC_DC -> AC/DC
     txt = re.sub(r"\s_\s", " / ", txt)               # "Bosco _ Vinicius" -> "Bosco / Vinicius"
     txt = txt.replace("_", " ")
