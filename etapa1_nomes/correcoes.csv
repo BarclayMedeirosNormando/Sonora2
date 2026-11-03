@@ -1,300 +1,339 @@
-# Suas correcoes manuais. Valem POR CIMA do automatico e nao se perdem quando o catalogo e refeito.
+# Suas correcoes manuais. Valem POR CIMA do automatico e nao se perdem quando o catalogo e refeito.;;;
 # Formato:  tipo;alvo;valor      (uma por linha; linhas com # sao ignoradas)
-#
-# genero;Zé Vaqueiro;Piseiro            -> forca o genero de um artista
-# unir;Beatles;The Beatles              -> trata dois nomes como o mesmo artista (o 3o campo e o nome que aparece)
-# faixa;03 - Simon Says.mp3;Pharoahe Monch   -> forca o artista de um arquivo (nome do arquivo exatamente como esta no Drive)
-#
-# Generos validos: Piseiro, Forró, Sertanejo, Axé, Pagode/Samba, MPB, Brega, Gospel, Funk, Rap, Reggae,
-# Blues, Discoteca, Pop, Eletrônica, Rock, R&B/Soul, Românticas, Jazz, Clássica
-
-# ===== Revisao de 28/10/2026 (gerada por Claude) =====
-# Reparos de nome (titulo invertido, '50 Cent') agora sao automaticos em nomes.py/atualizar.py.
-# --- unir nomes que sao o mesmo artista ---
-unir;ACDC;AC/DC
-unir;Banda Noda De Cajú;Noda de Caju
-unir;DENNIS;Dennis DJ
-unir;REM;R.E.M.
-unir;C/C Music Factory;C & C Music Factory
-unir;Cheiro de Amor;Banda Cheiro de Amor
-unir;MADONA;Madonna
-unir;Mart nália;Mart'nália
-unir;B'52;The B-52's
-unir;Man at work;Men At Work
-unir;Link Park;Linkin Park
-unir;Daniel Oficial;Daniel
-unir;Isadora Pompeo 2018;Isadora Pompeo
-unir;Gabriela Rocha 2018;Gabriela Rocha
-unir;Gabriela Rocha e Coral Kemuel 2018;Gabriela Rocha
-unir;Titãs 1984;Titãs
-unir;#tbtTitãs 1986;Titãs
-unir;01 002. Daryl Hall & John Oates;Daryl Hall & John Oates
-# --- genero: corrigindo os que estavam errados e preenchendo os sem genero ---
-genero;Creedence Clearwater Revival;Rock
-genero;Skank;Rock
-genero;Os Paralamas do Sucesso;Rock
-genero;The Police;Rock
-genero;Jota Quest;Rock
-genero;Bonnie Tyler;Rock
-genero;Capital Inicial;Rock
-genero;Iron Maiden;Rock
-genero;Pato Fu;Rock
-genero;The Outfield;Rock
-genero;Forfun;Rock
-genero;Justin Bieber;Pop
-genero;Maroon 5;Pop
-genero;Bruno Mars;Pop
-genero;Lulu Santos;Pop
-genero;Doja Cat;Pop
-genero;Black Eyed Peas;Pop
-genero;Lagum;Pop
-genero;Céline Dion;Pop
-genero;IZA;Pop
-genero;Melim;Pop
-genero;KLB;Pop
-genero;Tiago Iorc;Pop
-genero;Jason Derulo;Pop
-genero;Miley Cyrus;Pop
-genero;Pajama Party;Pop
-genero;The Cover Girls;Pop
-genero;Kc & The Sunshine Band;Discoteca
-genero;Sister Sledge;Discoteca
-genero;Sybil;Discoteca
-genero;John Paul Young;Discoteca
-genero;Akon;R&B/Soul
-genero;Sade;R&B/Soul
-genero;The Temptations;R&B/Soul
-genero;Jackson 5;R&B/Soul
-genero;Ivete Sangalo;Axé
-genero;Banda Eva;Axé
-genero;É O Tchan;Axé
-genero;Babado Novo;Axé
-genero;Bell Marques;Axé
-genero;Jammil E Uma Noites;Axé
-genero;Axé 90 Graus;Axé
-genero;Timbalada;Axé
-genero;Banda Cheiro de Amor;Axé
-genero;Simone;MPB
-genero;Mart'nália;MPB
-genero;Ana Carolina;MPB
-genero;Mônica Salmaso;MPB
-genero;Fernanda Takai;MPB
-genero;Tiê;MPB
-genero;Maria Gadú;MPB
-genero;Marina Elali;MPB
-genero;Roberta Campos;MPB
-genero;Ayrton Montarroyos;MPB
-genero;Arnaldo Antunes;MPB
-genero;Ludmilla;Funk
-genero;Dennis DJ;Funk
-genero;MC L da Vinte;Funk
-genero;MC G15;Funk
-genero;Zé Vaqueiro;Piseiro
-genero;Projota;Rap
-genero;50 Cent;Rap
-genero;Grandmaster Slice;Rap
-genero;Sidoka;Rap
-genero;Young T & Bugsey;Rap
-genero;Guig Ghetto;Rap
-genero;Cat Dealers;Eletrônica
-genero;KVSH;Eletrônica
-genero;Bhaskar;Eletrônica
-genero;Daft Punk;Eletrônica
-genero;Adhemar De Campos;Gospel
-genero;Fernanda Brum;Gospel
-genero;Gabriel Elias;Gospel
-genero;Casa Aberta;Gospel
-genero;Priscilla Alcantara;Gospel
-genero;Leandro Borges;Gospel
-genero;Trazendo a Arca;Gospel
-genero;Adelso Freire;Gospel
-genero;Ousado Amor;Gospel
-genero;Livres Juliano Son;Gospel
-genero;Adoradores 3;Gospel
-genero;Toyan;Reggae
-genero;Billy Boyo;Reggae
-genero;Armandinho;Reggae
-genero;Chimarruts;Reggae
-genero;Sister Nancy;Reggae
-genero;Early B;Reggae
-genero;Cidade Negra;Reggae
-genero;Trio Virgulino;Forró
-genero;Dolly Parton;Sertanejo
-genero;Rafa & Pipo Marques;Sertanejo
-genero;César Oliveira & Rogério Melo;Sertanejo
-genero;Lucas Lucco;Sertanejo
-genero;Terra Samba;Pagode/Samba
-genero;Pagod art;Pagode/Samba
-genero;Bobby Bland;Blues
-genero;Decada Explosiva Romantica;Românticas
-# --- forcar o artista de um arquivo ---
-faixa;CORAL JOVEM DO RIO, LEONARDO GONÇALVES, PEDRO VALENÇA E ALICE Z - MILAGRES TORNAM-SE REALIDADE.mp3;Coral Jovem do Rio
-# --- faixas com o titulo no lugar do artista (arquivo 'Titulo - Artista') ---
-faixa;Careless Whisper - George Michael.mp3;George Michael
-faixa;Everything I Own - Bread.mp3;Bread
-faixa;How Deep Is Your Love - Bee Gees.mp3;Bee Gees
-faixa;Missing You - John Waite.mp3;John Waite
-faixa;Missing You - Diana Ross.mp3;Diana Ross
-faixa;Ordinary World - Duran Duran.mp3;Duran Duran
-faixa;Please Don't Go - KC The Sunshine Band.mp3;KC and the Sunshine Band
-faixa;Purple Rain - Prince.mp3;Prince
-faixa;Repetition - Information Society - Best of Information Society.mp3;Information Society
-faixa;Rich Girl - 002. Daryl Hall John Oates.mp3;Daryl Hall & John Oates
-faixa;Send Me An Angel - Scorpions.mp3;Scorpions
-faixa;Stairway to Heaven - Led Zeppelin.mp3;Led Zeppelin
-faixa;Time After Time - Cyndi Lauper.mp3;Cyndi Lauper
-faixa;The Cover Girls - Wishing On a Star.mp3;The Cover Girls
-faixa;Wishing On A Star - Rose Royce.mp3;Rose Royce
-faixa;All My Life - K-Ci JoJo.mp3;K-Ci & JoJo
-faixa;Born To Be Wild - ACDC.mp3;AC/DC
-faixa;Be Alright - Zapp Roger.mp3;Zapp & Roger
-faixa;I Still Believe - Brenda K. Starr.mp3;Brenda K. Starr
-faixa;I'll Be There - Jackson 5.mp3;Jackson Five
-faixa;Into The Night - Benny Mardones.mp3;Benny Mardones
-faixa;Iris - The Goo Goo Dolls.mp3;Goo Goo Dolls
-faixa;Just The Two Of Us, Bill Withers - Grover Washington Jr.mp3;Grover Washington Jr.
-faixa;Just The Way You Are - Barry White.mp3;Barry White
-faixa;Love Hurts - Nazareth.mp3;Nazareth
-faixa;You'll Never Walk Alone - Gerry The Pacemakers.mp3;Gerry & The Pacemakers
-faixa;Amor - Secos Molhados.mp3;Secos & Molhados
-faixa;01 - Milagre - Eyshila e Liz Lanne.mp3;Eyshila
-faixa;Esperança - Sarah Oliveira, Eli Soares.mp3;Sarah Oliveira
-# --- generos dos artistas que estavam em 'Outros' ---
-genero;Banda Magníficos;Forró
-genero;Jackson do Pandeiro;Forró
-genero;Solange Almeida;Forró
-genero;Trio Nordestino;Forró
-genero;Os 3 do Nordeste;Forró
-genero;Abdias;Forró
-genero;Abdias e sua Sanfona de 8 baixos;Forró
-genero;Catuaba Com Amendoim;Forró
-genero;Dorgival Dantas;Forró
-genero;Edson Lima;Forró
-genero;Joao do Vale;Forró
-genero;Jorge De Altinho;Forró
-genero;Raí Saia Rodada;Forró
-genero;Xand Avião;Forró
-genero;Ze Pipa;Forró
-genero;Fagner & Zé Ramalho;MPB
-genero;Zélia Duncan;MPB
-genero;Clara Nunes;MPB
-genero;ANAVITÓRIA;MPB
-genero;Adriana Partimpim;MPB
-genero;Ana Cañas;MPB
-genero;Angela Maria;MPB
-genero;Carmen Miranda with Bando da Lua e Garoto;MPB
-genero;Fernanda Porto;MPB
-genero;Gilsons;MPB
-genero;Itamar Assumpção;MPB
-genero;Josyara;MPB
-genero;Mariene De Castro;MPB
-genero;Marjorie Estiano;MPB
-genero;Otto;MPB
-genero;Pedro Mariano;MPB
-genero;Roberto Carlos;MPB
-genero;Rosa Passos;MPB
-genero;Tom Zé;MPB
-genero;Vander Lee;MPB
-genero;Vinicius de Moraes;MPB
-genero;Wilson Simoninha;MPB
-genero;Zeca Baleiro;MPB
-genero;Zeca Veloso;MPB
-genero;Léo Santana;Axé
-genero;Alexandre Peixe;Axé
-genero;Luiz Caldas;Axé
-genero;Psirico;Axé
-genero;Saiddy Bamba;Axé
-genero;A Zorra;Axé
-genero;Ara Ketu;Axé
-genero;Carlinhos Brown;Axé
-genero;Claudia Leitte;Axé
-genero;Durval Lelys;Axé
-genero;Rubinho Oz Bambaz;Axé
-genero;Saulo;Axé
-genero;Xanddy Harmonia;Axé
-genero;Rubynho;Pagode/Samba
-genero;Adoniran Barbosa;Pagode/Samba
-genero;Demonios Da Garoa;Pagode/Samba
-genero;Martinho da Vila;Pagode/Samba
-genero;Moacyr Luz;Pagode/Samba
-genero;Neguinho Da Beija Flor;Pagode/Samba
-genero;Paulinho da Viola;Pagode/Samba
-genero;Arianne;Gospel
-genero;Banda e Voz;Gospel
-genero;Bruna Karla e Anderson Freire;Gospel
-genero;Coral Jovem do Rio;Gospel
-genero;Cristina Mel;Gospel
-genero;Damares;Gospel
-genero;Eyshila e Fernanda Brum;Gospel
-genero;Jozyanne;Gospel
-genero;Julia Vitoria;Gospel
-genero;LYDIA MOISES;Gospel
-genero;Vanilda Bordieri;Gospel
-genero;Wilian Nascimento;Gospel
-genero;Eyshila;Gospel
-genero;Sarah Oliveira;Gospel
-genero;Barão Vermelho;Rock
-genero;Biquini Cavadão;Rock
-genero;Chico Science;Rock
-genero;Creedence;Rock
-genero;Frejat;Rock
-genero;Humberto Gessinger;Rock
-genero;Leoni;Rock
-genero;Nando Reis & Os Infernais;Rock
-genero;Nenhum De Nós;Rock
-genero;Paulo Ricardo;Rock
-genero;Renato Russo;Rock
-genero;The Black Jets;Rock
-genero;The Go-Go's;Rock
-genero;Vanguart;Rock
-genero;Velvet Revolver;Rock
-genero;John Waite;Rock
-genero;AC/DC;Rock
-genero;Benny Mardones;Rock
-genero;Nazareth;Rock
-genero;Gerry & The Pacemakers;Rock
-genero;Secos & Molhados;Rock
-genero;Andru Donalds;Pop
-genero;Captain & Tennille;Pop
-genero;DNCE;Pop
-genero;F4;Pop
-genero;Gretchen;Pop
-genero;Issam Alnajjar;Pop
-genero;JLS;Pop
-genero;John Travolta;Pop
-genero;Kell Smith;Pop
-genero;No Mercy;Pop
-genero;Opus;Pop
-genero;S Club 7;Pop
-genero;The Carpenters Tribute Band;Pop
-genero;Bread;Pop
-genero;The Cover Girls;Pop
-genero;AronChupa;Eletrônica
-genero;Bruno Martini;Eletrônica
-genero;Cj Jeff;Eletrônica
-genero;Dj Bella Camargo;Eletrônica
-genero;Ivan Gough & Feenixpawl;Eletrônica
-genero;Real System;Eletrônica
-genero;Tim Berg;Eletrônica
-genero;VINNE;Eletrônica
-genero;Information Society;Eletrônica
-genero;Another Level;R&B/Soul
-genero;Earth, Wind & Fire The Emotions;R&B/Soul
-genero;Maverick Sabre;R&B/Soul
-genero;Nu Flavor;R&B/Soul
-genero;Roger;R&B/Soul
-genero;Prince;R&B/Soul
-genero;Rose Royce;R&B/Soul
-genero;K-Ci & JoJo;R&B/Soul
-genero;Zapp & Roger;R&B/Soul
-genero;Brenda K. Starr;R&B/Soul
-genero;Jackson Five;R&B/Soul
-genero;Edi Rock;Rap
-genero;Hungria;Rap
-genero;Negra Li;Rap
-genero;Mc Hariel;Funk
-genero;Eduardo Costa;Sertanejo
-genero;Frenéticas;Discoteca
-genero;Patrick Hernandez;Discoteca
-genero;KC and the Sunshine Band;Discoteca
-genero;Grover Washington Jr.;Jazz
+#;;;
+# genero;Zé Vaqueiro;Piseiro            -> forca o genero de um artista;
+# unir;Beatles;The Beatles              -> trata dois nomes como o mesmo artista (o 3o campo e o nome que aparece);
+# faixa;03 - Simon Says.mp3;Pharoahe Monch   -> forca o artista de um arquivo (nome do arquivo exatamente como esta no Drive);
+#;;;
+# Generos validos: Piseiro, Forró, Sertanejo, Axé, Pagode/Samba, MPB, Brega, Gospel, Funk, Rap, Reggae,;;;
+# Blues, Discoteca, Pop, Eletrônica, Rock, R&B/Soul, Românticas, Jazz, Clássica;;;
+;;;
+# ===== Revisao de 28/10/2026 (gerada por Claude) =====;;;
+# Reparos de nome (titulo invertido, '50 Cent') agora sao automaticos em nomes.py/atualizar.py.;;;
+# --- unir nomes que sao o mesmo artista ---;;;
+unir;ACDC;AC/DC;
+unir;Banda Noda De Cajú;Noda de Caju;
+unir;DENNIS;Dennis DJ;
+unir;REM;R.E.M.;
+unir;C/C Music Factory;C & C Music Factory;
+unir;Cheiro de Amor;Banda Cheiro de Amor;
+unir;MADONA;Madonna;
+unir;Mart nália;Mart'nália;
+unir;B'52;The B-52's;
+unir;Man at work;Men At Work;
+unir;Link Park;Linkin Park;
+unir;Daniel Oficial;Daniel;
+unir;Isadora Pompeo 2018;Isadora Pompeo;
+unir;Gabriela Rocha 2018;Gabriela Rocha;
+unir;Gabriela Rocha e Coral Kemuel 2018;Gabriela Rocha;
+unir;Titãs 1984;Titãs;
+unir;#tbtTitãs 1986;Titãs;
+unir;01 002. Daryl Hall & John Oates;Daryl Hall & John Oates;
+# --- genero: corrigindo os que estavam errados e preenchendo os sem genero ---;;;
+genero;Creedence Clearwater Revival;Rock;
+genero;Skank;Rock;
+genero;Os Paralamas do Sucesso;Rock;
+genero;The Police;Rock;
+genero;Jota Quest;Rock;
+genero;Bonnie Tyler;Rock;
+genero;Capital Inicial;Rock;
+genero;Iron Maiden;Rock;
+genero;Pato Fu;Rock;
+genero;The Outfield;Rock;
+genero;Forfun;Rock;
+genero;Justin Bieber;Pop;
+genero;Maroon 5;Pop;
+genero;Bruno Mars;Pop;
+genero;Lulu Santos;Pop;
+genero;Doja Cat;Pop;
+genero;Black Eyed Peas;Pop;
+genero;Lagum;Pop;
+genero;Céline Dion;Pop;
+genero;IZA;Pop;
+genero;Melim;Pop;
+genero;KLB;Pop;
+genero;Tiago Iorc;Pop;
+genero;Jason Derulo;Pop;
+genero;Miley Cyrus;Pop;
+genero;Pajama Party;Pop;
+genero;The Cover Girls;Pop;
+genero;Kc & The Sunshine Band;Discoteca;
+genero;Sister Sledge;Discoteca;
+genero;Sybil;Discoteca;
+genero;John Paul Young;Discoteca;
+genero;Akon;R&B/Soul;
+genero;Sade;R&B/Soul;
+genero;The Temptations;R&B/Soul;
+genero;Jackson 5;R&B/Soul;
+genero;Ivete Sangalo;Axé;
+genero;Banda Eva;Axé;
+genero;É O Tchan;Axé;
+genero;Babado Novo;Axé;
+genero;Bell Marques;Axé;
+genero;Jammil E Uma Noites;Axé;
+genero;Axé 90 Graus;Axé;
+genero;Timbalada;Axé;
+genero;Banda Cheiro de Amor;Axé;
+genero;Simone;MPB;
+genero;Mart'nália;MPB;
+genero;Ana Carolina;MPB;
+genero;Mônica Salmaso;MPB;
+genero;Fernanda Takai;MPB;
+genero;Tiê;MPB;
+genero;Maria Gadú;MPB;
+genero;Marina Elali;MPB;
+genero;Roberta Campos;MPB;
+genero;Ayrton Montarroyos;MPB;
+genero;Arnaldo Antunes;MPB;
+genero;Ludmilla;Funk;
+genero;Dennis DJ;Funk;
+genero;MC L da Vinte;Funk;
+genero;MC G15;Funk;
+genero;Zé Vaqueiro;Piseiro;
+genero;Projota;Rap;
+genero;50 Cent;Rap;
+genero;Grandmaster Slice;Rap;
+genero;Sidoka;Rap;
+genero;Young T & Bugsey;Rap;
+genero;Guig Ghetto;Rap;
+genero;Cat Dealers;Eletrônica;
+genero;KVSH;Eletrônica;
+genero;Bhaskar;Eletrônica;
+genero;Daft Punk;Eletrônica;
+genero;Adhemar De Campos;Gospel;
+genero;Fernanda Brum;Gospel;
+genero;Gabriel Elias;Gospel;
+genero;Casa Aberta;Gospel;
+genero;Priscilla Alcantara;Gospel;
+genero;Leandro Borges;Gospel;
+genero;Trazendo a Arca;Gospel;
+genero;Adelso Freire;Gospel;
+genero;Ousado Amor;Gospel;
+genero;Livres Juliano Son;Gospel;
+genero;Adoradores 3;Gospel;
+genero;Toyan;Reggae;
+genero;Billy Boyo;Reggae;
+genero;Armandinho;Reggae;
+genero;Chimarruts;Reggae;
+genero;Sister Nancy;Reggae;
+genero;Early B;Reggae;
+genero;Cidade Negra;Reggae;
+genero;Trio Virgulino;Forró;
+genero;Dolly Parton;Sertanejo;
+genero;Rafa & Pipo Marques;Sertanejo;
+genero;César Oliveira & Rogério Melo;Sertanejo;
+genero;Lucas Lucco;Sertanejo;
+genero;Terra Samba;Pagode/Samba;
+genero;Pagod art;Pagode/Samba;
+genero;Bobby Bland;Blues;
+genero;Decada Explosiva Romantica;Românticas;
+# --- forcar o artista de um arquivo ---;;;
+faixa;CORAL JOVEM DO RIO, LEONARDO GONÇALVES, PEDRO VALENÇA E ALICE Z - MILAGRES TORNAM-SE REALIDADE.mp3;Coral Jovem do Rio;
+# --- faixas com o titulo no lugar do artista (arquivo 'Titulo - Artista') ---;;;
+faixa;Careless Whisper - George Michael.mp3;George Michael;
+faixa;Everything I Own - Bread.mp3;Bread;
+faixa;How Deep Is Your Love - Bee Gees.mp3;Bee Gees;
+faixa;Missing You - John Waite.mp3;John Waite;
+faixa;Missing You - Diana Ross.mp3;Diana Ross;
+faixa;Ordinary World - Duran Duran.mp3;Duran Duran;
+faixa;Please Don't Go - KC The Sunshine Band.mp3;KC and the Sunshine Band;
+faixa;Purple Rain - Prince.mp3;Prince;
+faixa;Repetition - Information Society - Best of Information Society.mp3;Information Society;
+faixa;Rich Girl - 002. Daryl Hall John Oates.mp3;Daryl Hall & John Oates;
+faixa;Send Me An Angel - Scorpions.mp3;Scorpions;
+faixa;Stairway to Heaven - Led Zeppelin.mp3;Led Zeppelin;
+faixa;Time After Time - Cyndi Lauper.mp3;Cyndi Lauper;
+faixa;The Cover Girls - Wishing On a Star.mp3;The Cover Girls;
+faixa;Wishing On A Star - Rose Royce.mp3;Rose Royce;
+faixa;All My Life - K-Ci JoJo.mp3;K-Ci & JoJo;
+faixa;Born To Be Wild - ACDC.mp3;AC/DC;
+faixa;Be Alright - Zapp Roger.mp3;Zapp & Roger;
+faixa;I Still Believe - Brenda K. Starr.mp3;Brenda K. Starr;
+faixa;I'll Be There - Jackson 5.mp3;Jackson Five;
+faixa;Into The Night - Benny Mardones.mp3;Benny Mardones;
+faixa;Iris - The Goo Goo Dolls.mp3;Goo Goo Dolls;
+faixa;Just The Two Of Us, Bill Withers - Grover Washington Jr.mp3;Grover Washington Jr.;
+faixa;Just The Way You Are - Barry White.mp3;Barry White;
+faixa;Love Hurts - Nazareth.mp3;Nazareth;
+faixa;You'll Never Walk Alone - Gerry The Pacemakers.mp3;Gerry & The Pacemakers;
+faixa;Amor - Secos Molhados.mp3;Secos & Molhados;
+faixa;01 - Milagre - Eyshila e Liz Lanne.mp3;Eyshila;
+faixa;Esperança - Sarah Oliveira, Eli Soares.mp3;Sarah Oliveira;
+# --- generos dos artistas que estavam em 'Outros' ---;;;
+genero;Banda Magníficos;Forró;
+genero;Jackson do Pandeiro;Forró;
+genero;Solange Almeida;Forró;
+genero;Trio Nordestino;Forró;
+genero;Os 3 do Nordeste;Forró;
+genero;Abdias;Forró;
+genero;Abdias e sua Sanfona de 8 baixos;Forró;
+genero;Catuaba Com Amendoim;Forró;
+genero;Dorgival Dantas;Forró;
+genero;Edson Lima;Forró;
+genero;Joao do Vale;Forró;
+genero;Jorge De Altinho;Forró;
+genero;Raí Saia Rodada;Forró;
+genero;Xand Avião;Forró;
+genero;Ze Pipa;Forró;
+genero;Fagner & Zé Ramalho;MPB;
+genero;Zélia Duncan;MPB;
+genero;Clara Nunes;MPB;
+genero;ANAVITÓRIA;MPB;
+genero;Adriana Partimpim;MPB;
+genero;Ana Cañas;MPB;
+genero;Angela Maria;MPB;
+genero;Carmen Miranda with Bando da Lua e Garoto;MPB;
+genero;Fernanda Porto;MPB;
+genero;Gilsons;MPB;
+genero;Itamar Assumpção;MPB;
+genero;Josyara;MPB;
+genero;Mariene De Castro;MPB;
+genero;Marjorie Estiano;MPB;
+genero;Otto;MPB;
+genero;Pedro Mariano;MPB;
+genero;Roberto Carlos;MPB;
+genero;Rosa Passos;MPB;
+genero;Tom Zé;MPB;
+genero;Vander Lee;MPB;
+genero;Vinicius de Moraes;MPB;
+genero;Wilson Simoninha;MPB;
+genero;Zeca Baleiro;MPB;
+genero;Zeca Veloso;MPB;
+genero;Léo Santana;Axé;
+genero;Alexandre Peixe;Axé;
+genero;Luiz Caldas;Axé;
+genero;Psirico;Axé;
+genero;Saiddy Bamba;Axé;
+genero;A Zorra;Axé;
+genero;Ara Ketu;Axé;
+genero;Carlinhos Brown;Axé;
+genero;Claudia Leitte;Axé;
+genero;Durval Lelys;Axé;
+genero;Rubinho Oz Bambaz;Axé;
+genero;Saulo;Axé;
+genero;Xanddy Harmonia;Axé;
+genero;Rubynho;Pagode/Samba;
+genero;Adoniran Barbosa;Pagode/Samba;
+genero;Demonios Da Garoa;Pagode/Samba;
+genero;Martinho da Vila;Pagode/Samba;
+genero;Moacyr Luz;Pagode/Samba;
+genero;Neguinho Da Beija Flor;Pagode/Samba;
+genero;Paulinho da Viola;Pagode/Samba;
+genero;Arianne;Gospel;
+genero;Banda e Voz;Gospel;
+genero;Bruna Karla e Anderson Freire;Gospel;
+genero;Coral Jovem do Rio;Gospel;
+genero;Cristina Mel;Gospel;
+genero;Damares;Gospel;
+genero;Eyshila e Fernanda Brum;Gospel;
+genero;Jozyanne;Gospel;
+genero;Julia Vitoria;Gospel;
+genero;LYDIA MOISES;Gospel;
+genero;Vanilda Bordieri;Gospel;
+genero;Wilian Nascimento;Gospel;
+genero;Eyshila;Gospel;
+genero;Sarah Oliveira;Gospel;
+genero;Barão Vermelho;Rock;
+genero;Biquini Cavadão;Rock;
+genero;Chico Science;Rock;
+genero;Creedence;Rock;
+genero;Frejat;Rock;
+genero;Humberto Gessinger;Rock;
+genero;Leoni;Rock;
+genero;Nando Reis & Os Infernais;Rock;
+genero;Nenhum De Nós;Rock;
+genero;Paulo Ricardo;Rock;
+genero;Renato Russo;Rock;
+genero;The Black Jets;Rock;
+genero;The Go-Go's;Rock;
+genero;Vanguart;Rock;
+genero;Velvet Revolver;Rock;
+genero;John Waite;Rock;
+genero;AC/DC;Rock;
+genero;Benny Mardones;Rock;
+genero;Nazareth;Rock;
+genero;Gerry & The Pacemakers;Rock;
+genero;Secos & Molhados;Rock;
+genero;Andru Donalds;Pop;
+genero;Captain & Tennille;Pop;
+genero;DNCE;Pop;
+genero;F4;Pop;
+genero;Gretchen;Pop;
+genero;Issam Alnajjar;Pop;
+genero;JLS;Pop;
+genero;John Travolta;Pop;
+genero;Kell Smith;Pop;
+genero;No Mercy;Pop;
+genero;Opus;Pop;
+genero;S Club 7;Pop;
+genero;The Carpenters Tribute Band;Pop;
+genero;Bread;Pop;
+genero;The Cover Girls;Pop;
+genero;AronChupa;Eletrônica;
+genero;Bruno Martini;Eletrônica;
+genero;Cj Jeff;Eletrônica;
+genero;Dj Bella Camargo;Eletrônica;
+genero;Ivan Gough & Feenixpawl;Eletrônica;
+genero;Real System;Eletrônica;
+genero;Tim Berg;Eletrônica;
+genero;VINNE;Eletrônica;
+genero;Information Society;Eletrônica;
+genero;Another Level;R&B/Soul;
+genero;Earth, Wind & Fire The Emotions;R&B/Soul;
+genero;Maverick Sabre;R&B/Soul;
+genero;Nu Flavor;R&B/Soul;
+genero;Roger;R&B/Soul;
+genero;Prince;R&B/Soul;
+genero;Rose Royce;R&B/Soul;
+genero;K-Ci & JoJo;R&B/Soul;
+genero;Zapp & Roger;R&B/Soul;
+genero;Brenda K. Starr;R&B/Soul;
+genero;Jackson Five;R&B/Soul;
+genero;Edi Rock;Rap;
+genero;Hungria;Rap;
+genero;Negra Li;Rap;
+genero;Mc Hariel;Funk;
+genero;Eduardo Costa;Sertanejo;
+genero;Frenéticas;Discoteca;
+genero;Patrick Hernandez;Discoteca;
+genero;KC and the Sunshine Band;Discoteca;
+genero;Grover Washington Jr.;Jazz;
+genero;Fabio Jr;Pop;
+genero;Linkin Park;Rock;
+foto;Fagner & Zé Ramalho;https://i.scdn.co/image/ab67616d0000b27390b00548d9ff67597f1904f4;
+# --- painel_artistas.html (03/11/2026) ---;;;
+genero;Fabio Jr;Pop
+genero;Linkin Park;Rock
+foto;Fagner & Zé Ramalho;https://i.scdn.co/image/ab67616d0000b27390b00548d9ff67597f1904f4
+genero;Santi Lobo;MPB
+genero;Thiago Thomé;MPB
+genero;4 What's Up;Rock
+foto;4 What's Up;https://upload.wikimedia.org/wikipedia/pt/9/9f/4_Non_Blondes_-_Whats_up.jpg?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=original
+foto;Dennis DJ;https://cdn-images.dzcdn.net/images/artist/3a8a6bf97c5dd8f3d5f0f2bef5f00b48/500x500-000000-80-0-0.jpg
+foto;S Club 7;https://cdn-images.dzcdn.net/images/artist/24f7a15a122a5ea0666a1de1d8f156da/500x500-000000-80-0-0.jpg
+# --- painel_artistas (03/11/2026 12:35) ---
+foto;Bryan Adams;https://upload.wikimedia.org/wikipedia/commons/c/cc/BryAdamsMargate130624_%2839_of_43%29_%2853789411882%29_Cropped.jpg?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=original
+genero;Domer;MPB
+genero;Desejo De Menina;Forró
+genero;FLENCY;Eletrônica
+# --- painel_artistas (03/11/2026 12:39) ---
+genero;Aretha Franklin;Soul
+# --- painel_artistas (03/11/2026 12:43) ---
+foto;Bruna Karla e Anderson Freire;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzjwqW0_SjTZLSLOdM89R8ljKiZGA7jD57CoAyLn0M1g&s
+foto;Various Artists;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6GlNzLNZpua_oMiTkIW6g7SK-eWMsa-0vFTDAROf7BUd6s40gs39B4UQy&s=10
+# --- painel_artistas (03/11/2026 13:31) ---
+unir;One Of Us;Joan Osborne
+foto;Joan Osborne;https://cdn-images.dzcdn.net/images/artist/c49e5390280d11db34a8b06841ec7509/500x500-000000-80-0-0.jpg
+titulo;1KAbMEw7VBLVkSmcS-bSgsYlzHBQXVEhA;One of Us
+titulo;1paev58ZxsHTyYO2lkFemJfKFTuTgWK0v;One of Us
+# --- painel_artistas (03/11/2026 13:37) ---
+unir;98o;98 Degrees
+genero;98 Degrees;Pop
+foto;98 Degrees;https://cdn-images.dzcdn.net/images/artist/dfa73dd4877d66faf388dc300a10a71e/500x500-000000-80-0-0.jpg
+# --- painel_artistas (03/11/2026 13:43) ---
+unir;Various Artist;Four Man Furnace
+foto;Four Man Furnace;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStCkBp1PFhFewoO0WEe5onLhQNZCXD30f3h71BdVLVIQ&s=10
+titulo;178gXLmAeiYUlTEU-tWO8aOppMFT_qjCc;Exploitation of Sound - Hero Recording Corp. - Nowhere Fast
+unir;Various Artists;The Weather Girls
+genero;The Weather Girls;Discoteca
+foto;The Weather Girls;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6GlNzLNZpua_oMiTkIW6g7SK-eWMsa-0vFTDAROf7BUd6s40gs39B4UQy&s=10

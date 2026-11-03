@@ -13,6 +13,7 @@ na primeira vez que ela aparece, guardando no celular.
 So entram faixas principais (repetidas ficam de fora).
 """
 import argparse
+import csv
 import json
 import shutil
 import sqlite3
@@ -20,7 +21,34 @@ import sys
 import zipfile
 from pathlib import Path
 
+from nomes import chave, ler_linhas_csv
+
 OUTROS = "Outros"
+
+
+def ler_fotos_correcao(caminho):
+    """correcoes.csv: linhas 'foto;Artista;https://...' trocam a foto do artista (vem do painel_artistas.html).
+    Se a mesma linha aparecer mais de uma vez, vale a ultima. 'foto;Artista;-' remove a foto."""
+    fotos = {}
+    p = Path(caminho)
+    if not p.exists():
+        return fotos
+    for linha in ler_linhas_csv(p):
+        if len(linha) < 3 or linha[0].strip().lower() != "foto":
+            continue
+        fotos[chave(linha[1].strip())] = linha[2].strip()
+    return fotos
+
+
+def ler_titulos_correcao(caminho):
+    """correcoes.csv: 'titulo;<id do arquivo no Drive>;Novo titulo' (vem do painel). A ultima linha de cada id vale."""
+    t = {}
+    p = Path(caminho)
+    if p.exists():
+        for linha in ler_linhas_csv(p):
+            if len(linha) >= 3 and linha[0].strip().lower() == "titulo" and linha[2].strip():
+                t[linha[1].strip()] = linha[2].strip()
+    return t
 
 
 def slug(k):
@@ -30,6 +58,7 @@ def slug(k):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--saida", default="saida")
+    ap.add_argument("--correcoes", default="correcoes.csv")
     args = ap.parse_args()
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -49,6 +78,9 @@ def main():
             if v.get("foto_url"):
                 urls[k] = v["foto_url"]
 
+    fotos_corr = ler_fotos_correcao(args.correcoes)
+    titulos_corr = ler_titulos_correcao(args.correcoes)
+
     faixas = {}
     for f in db.execute("""select id, titulo, versao, convidados, artista_chave, pasta
                            from faixas where principal=1 order by lower(titulo)"""):
@@ -64,6 +96,10 @@ def main():
         foto = None
         if a["foto"] and urls.get(a["chave"]):
             foto, n_fotos = urls[a["chave"]], n_fotos + 1
+        if a["chave"] in fotos_corr:                      # foto escolhida no painel_artistas.html
+            url = fotos_corr[a["chave"]]
+            foto = url if url.startswith("http") else None
+            n_fotos += 1 if foto else 0
         s = slug(a["chave"])
         artistas.append({"id": s, "nome": a["nome"], "genero": g, "foto": foto, "faixas": len(fs)})
         generos.setdefault(g, {"nome": g, "artistas": 0, "faixas": 0})
@@ -71,8 +107,9 @@ def main():
         generos[g]["faixas"] += len(fs)
         lista = []
         for f in fs:
-            busca.append([f["id"], f["titulo"], f["versao"] or "", s])
-            item = {"id": f["id"], "titulo": f["titulo"]}
+            titulo = titulos_corr.get(f["id"], f["titulo"])
+            busca.append([f["id"], titulo, f["versao"] or "", s])
+            item = {"id": f["id"], "titulo": titulo}
             if f["versao"]:
                 item["versao"] = f["versao"]
             if f["convidados"]:

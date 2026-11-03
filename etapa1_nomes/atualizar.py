@@ -25,7 +25,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from nomes import chave, ler_nome, reparar_nomes, sem_acento
+from nomes import chave, ler_nome, reparar_nomes, sem_acento, ler_linhas_csv
 from generos import genero_por_pastas, genero_por_tags, mapear, ESPECIFICOS
 import buscar_artistas as ba
 
@@ -56,8 +56,8 @@ def ler_correcoes(caminho):
     p = Path(caminho)
     if not p.exists():
         return c
-    with open(p, newline="", encoding="utf-8-sig") as fh:
-        for linha in csv.reader(fh, delimiter=";"):
+    if True:
+        for linha in ler_linhas_csv(p):
             if not linha or not linha[0].strip() or linha[0].lstrip().startswith("#") or len(linha) < 3:
                 continue
             tipo, alvo, valor = linha[0].strip().lower(), linha[1].strip(), linha[2].strip()
@@ -141,7 +141,9 @@ def construir(cache_path, saida, max_artistas, usar_rede, correcoes_path, refaze
         if f["name"] in corr["faixa"]:
             artista, conf, origem = corr["faixa"][f["name"]], "alta", "correcao"
         k = chave(artista) if artista and conf in ("alta", "media") else None
-        if k and k in uniao:
+        for _ in range(5):                       # segue cadeias (A->B, B->C)
+            if not (k and k in uniao) or uniao[k][0] == k:
+                break
             k, artista = uniao[k]
         if k:
             nome_exibicao[k][artista] += 1

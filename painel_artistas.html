@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sonora - Painel de artistas</title>
+<style>
+:root{
+  --bg:#0e1013; --card:#161a20; --card2:#1d222a; --linha:#2a303a; --txt:#e8ebf0; --suave:#9aa3b2;
+  --verde:#22c55e; --verde-fundo:#12301f; --amarelo:#f5b73b; --amarelo-fundo:#3a2f12; --vermelho:#ef5350;
+  --sombra:0 10px 30px rgba(0,0,0,.45);
+}
+:root[data-tema="claro"]{
+  --bg:#f4f5f7; --card:#ffffff; --card2:#eef0f3; --linha:#d9dde3; --txt:#16191f; --suave:#5d6675;
+  --verde:#16a34a; --verde-fundo:#dcf5e5; --amarelo:#a86b00; --amarelo-fundo:#fdf0d2; --vermelho:#c62828;
+  --sombra:0 10px 30px rgba(0,0,0,.15);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+button,select,input{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--linha);padding:14px 16px}
+.topo{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
+h1 span{color:var(--verde)}
+.espaco{flex:1}
+.so-servidor{display:none!important}
+body.servidor .so-servidor{display:inline-flex!important}
+.acao-col{display:flex;gap:6px;flex-wrap:wrap}
+.nome-edit{display:flex;gap:6px}
+.nome-edit input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--verde);border-radius:9px;padding:8px 10px}
+.fx{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--linha)}
+.fx input{width:100%;background:var(--card2);border:1px solid var(--linha);border-radius:9px;padding:7px 10px}
+.fx input.mudou{border-color:var(--verde)}
+.fx small{color:var(--suave)}
+#fxLista{max-height:55vh;overflow:auto;margin-top:8px}
+.btn{background:var(--card2);border:1px solid var(--linha);border-radius:9px;padding:8px 13px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--suave)}
+.btn.prim{background:var(--verde);border-color:var(--verde);color:#04170b;font-weight:700}
+.btn.prim:hover{filter:brightness(1.08)}
+.btn.perigo{color:var(--vermelho)}
+.a-btn,a.btn{color:inherit;text-decoration:none;display:inline-flex;align-items:center}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.contadores{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.cont{background:var(--card);border:1px solid var(--linha);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--suave)}
+.cont b{display:block;font-size:20px;color:var(--txt);line-height:1.1}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+.filtros input[type=search],.filtros select{background:var(--card);border:1px solid var(--linha);border-radius:9px;padding:9px 12px;min-width:0}
+.filtros input[type=search]{flex:1 1 220px}
+.chip{display:inline-flex;gap:6px;align-items:center;background:var(--card);border:1px solid var(--linha);border-radius:999px;padding:7px 12px;cursor:pointer;user-select:none;font-size:14px}
+.chip input{accent-color:var(--verde);margin:0}
+.chip.on{border-color:var(--verde);background:var(--verde-fundo)}
+.lista{display:flex;flex-direction:column;gap:8px}
+.linha{display:grid;grid-template-columns:60px minmax(0,1fr) 190px auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:10px 12px}
+.linha.mudou{border-color:var(--verde)}
+.foto{width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--card2);display:block}
+.inicial{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:22px;color:#fff}
+.nome{font-weight:600;overflow-wrap:anywhere}
+.meta{font-size:13px;color:var(--suave);display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:2px}
+.tag{border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600}
+.tag.aviso{background:var(--amarelo-fundo);color:var(--amarelo)}
+.tag.ok{background:var(--verde-fundo);color:var(--verde)}
+select.gen{width:100%;background:var(--card2);border:1px solid var(--linha);border-radius:9px;padding:8px 10px}
+select.gen.mudou{border-color:var(--verde)}
+.novo-gen{display:flex;gap:6px}
+.novo-gen input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--verde);border-radius:9px;padding:8px 10px}
+.mais{display:block;margin:16px auto}
+.vazio{text-align:center;color:var(--suave);padding:50px 10px;border:1px dashed var(--linha);border-radius:12px}
+.vazio h2{margin:0 0 6px;color:var(--txt);font-size:18px}
+/* janelas */
+.fundo{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;padding:4vh 12px;z-index:20;overflow:auto}
+.fundo.aberto{display:flex}
+.janela{background:var(--card);border:1px solid var(--linha);border-radius:14px;box-shadow:var(--sombra);width:min(760px,100%);padding:18px}
+.janela h2{margin:0 0 4px;font-size:18px}
+.janela .sub{color:var(--suave);margin:0 0 14px;font-size:14px}
+.busca{display:flex;gap:8px;flex-wrap:wrap}
+.busca input{flex:1 1 200px;min-width:0;background:var(--card2);border:1px solid var(--linha);border-radius:9px;padding:9px 12px}
+.resultados{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:14px 0}
+.cand{background:var(--card2);border:2px solid transparent;border-radius:12px;padding:8px;cursor:pointer;text-align:center}
+.cand:hover{border-color:var(--suave)}
+.cand.sel{border-color:var(--verde)}
+.cand img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:var(--card)}
+.cand b{display:block;font-size:13px;margin-top:6px;overflow-wrap:anywhere}
+.cand small{color:var(--suave)}
+.estado{color:var(--suave);font-size:14px;margin:10px 0}
+.estado.erro{color:var(--amarelo)}
+.url{display:flex;gap:10px;align-items:center;margin-top:6px}
+.url input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--linha);border-radius:9px;padding:9px 12px}
+.prev{width:64px;height:64px;border-radius:50%;object-fit:cover;background:var(--card2);flex:none}
+.acoes{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:16px}
+.acoes .espaco{flex:1}
+textarea{width:100%;min-height:220px;background:var(--card2);border:1px solid var(--linha);border-radius:10px;padding:10px;font:13px/1.5 ui-monospace,Consolas,monospace;color:var(--txt);resize:vertical}
+a.link{color:var(--verde)}
+@media (max-width:720px){
+  .linha{grid-template-columns:56px minmax(0,1fr);}
+  .linha .gen-col,.linha .acao-col{grid-column:1 / -1}
+  .linha .acao-col .btn{width:100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="topo">
+    <h1><span>Sonora</span> &middot; Painel de artistas</h1>
+    <span class="espaco"></span>
+    <button class="btn" id="btnCarregar">Carregar cat&aacute;logo</button>
+    <button class="btn prim" id="btnPublicar" disabled hidden>Salvar e publicar (0)</button>
+    <button class="btn" id="btnExportar" disabled>Exportar corre&ccedil;&otilde;es (0)</button>
+    <button class="btn" id="btnTema" title="Alternar tema claro/escuro">Tema</button>
+    <input type="file" id="arquivo" accept=".json,application/json" hidden>
+  </div>
+</header>
+
+<main>
+  <div id="boasVindas" class="vazio">
+    <h2>Carregue o cat&aacute;logo para come&ccedil;ar</h2>
+    <p>Clique em <b>Carregar cat&aacute;logo</b> e escolha o arquivo<br>
+      <code>etapa1_nomes\saida\app\indice.json</code><br>
+      (ele &eacute; gerado pelo <code>atualizar_musicas.ps1</code>).</p>
+    <button class="btn prim" id="btnCarregar2">Carregar cat&aacute;logo</button>
+  </div>
+
+  <div id="painel" hidden>
+    <div class="contadores" id="contadores"></div>
+    <div class="filtros">
+      <input type="search" id="busca" placeholder="Buscar artista...">
+      <select id="filtroGenero" aria-label="Filtrar por g&ecirc;nero"></select>
+      <label class="chip" id="chipSemFoto"><input type="checkbox" id="soSemFoto"> S&oacute; sem foto</label>
+      <label class="chip" id="chipSemGenero"><input type="checkbox" id="soSemGenero"> S&oacute; sem g&ecirc;nero</label>
+      <label class="chip" id="chipMudou"><input type="checkbox" id="soMudou"> S&oacute; alterados</label>
+    </div>
+    <div class="lista" id="lista"></div>
+    <button class="btn mais" id="btnMais" hidden>Mostrar mais</button>
+  </div>
+</main>
+
+<!-- janela da foto -->
+<div class="fundo" id="janFoto" role="dialog" aria-modal="true" aria-labelledby="fotoTitulo">
+  <div class="janela">
+    <h2 id="fotoTitulo">Foto do artista</h2>
+    <p class="sub" id="fotoSub"></p>
+    <div class="busca">
+      <input type="search" id="dzBusca" placeholder="Nome para buscar no Deezer">
+      <button class="btn prim" id="btnDz">Buscar no Deezer</button>
+      <a class="btn" id="linkGoogle" target="_blank" rel="noopener noreferrer">Google Imagens</a>
+    </div>
+    <div class="estado" id="dzEstado"></div>
+    <div class="resultados" id="dzResultados"></div>
+    <label for="fotoUrl" class="sub" style="display:block;margin:0">Ou cole o endere&ccedil;o da imagem (clique com o bot&atilde;o direito na imagem &gt; copiar endere&ccedil;o da imagem):</label>
+    <div class="url">
+      <img class="prev" id="fotoPrev" alt="">
+      <input type="text" id="fotoUrl" placeholder="https://...">
+    </div>
+    <div class="acoes">
+      <button class="btn perigo" id="btnSemFoto">Remover foto</button>
+      <button class="btn" id="btnDesfazerFoto">Voltar ao original</button>
+      <span class="espaco"></span>
+      <button class="btn" id="btnCancelarFoto">Cancelar</button>
+      <button class="btn prim" id="btnAplicarFoto">Usar esta foto</button>
+    </div>
+  </div>
+</div>
+
+<!-- janela de exportar -->
+<div class="fundo" id="janFaixas" role="dialog" aria-modal="true" aria-labelledby="fxTitulo">
+  <div class="janela">
+    <h2 id="fxTitulo">Músicas</h2>
+    <p class="sub">Edite o título e saia do campo (ou Enter). Só muda o nome mostrado no app; o arquivo no Drive não é alterado.</p>
+    <input type="search" id="fxBusca" placeholder="Filtrar músicas..." style="width:100%;background:var(--card2);border:1px solid var(--linha);border-radius:9px;padding:8px 10px">
+    <div id="fxLista"></div>
+    <div class="acoes"><button class="btn prim" id="btnFecharFx">Concluir</button></div>
+  </div>
+</div>
+
+<div class="fundo" id="janPublicar" role="dialog" aria-modal="true" aria-labelledby="pubTitulo">
+  <div class="janela">
+    <h2 id="pubTitulo">Publicando</h2>
+    <div class="estado" id="pubEstado"></div>
+    <pre id="pubLog" style="max-height:50vh;overflow:auto;background:var(--fundo2,rgba(127,127,127,.12));padding:10px;border-radius:8px;font-size:13px;white-space:pre-wrap"></pre>
+    <div class="acoes">
+      <button class="btn prim" id="btnFecharPub" disabled>Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="fundo" id="janExportar" role="dialog" aria-modal="true" aria-labelledby="expTitulo">
+  <div class="janela">
+    <h2 id="expTitulo">Corre&ccedil;&otilde;es prontas</h2>
+    <p class="sub">Cole estas linhas no <b>final</b> do arquivo <code>etapa1_nomes\correcoes.csv</code>, salve e rode
+      <code>.\atualizar_musicas.ps1</code>. Se um artista aparecer duas vezes, vale a &uacute;ltima linha.</p>
+    <textarea id="expTexto" readonly></textarea>
+    <div class="estado" id="expEstado"></div>
+    <div class="acoes">
+      <button class="btn perigo" id="btnLimpar">Limpar altera&ccedil;&otilde;es</button>
+      <span class="espaco"></span>
+      <button class="btn" id="btnBaixar">Baixar .csv</button>
+      <button class="btn prim" id="btnCopiar">Copiar</button>
+      <button class="btn" id="btnFecharExp">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var GENEROS_BASE = ["Rock","Pop","Eletrônica","MPB","Rap","R&B/Soul","Funk","Sertanejo","Forró","Discoteca",
+    "Axé","Pagode/Samba","Reggae","Gospel","Jazz","Blues","Brega","Românticas","Outros"];
+  var CHAVE_LOCAL = "sonora_painel_artistas_v1";
+  var POR_PAGINA = 60;
+
+  var artistas = [];          // {id, nome, genero, foto, faixas}
+  var generos = [];           // nomes
+  var edits = {};             // id -> {genero?:string, foto?:string|"-"}
+  var pagina = 1;
+  var visiveis = [];
+  var artistaFoto = null;     // artista em edicao na janela de foto
+  var fotoEscolhida = null;   // URL selecionada na janela
+
+  function $(id) { return document.getElementById(id); }
+  function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function norm(t) { return String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+  function cor(t) { var h = 0; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 360; return "hsl(" + h + " 45% 38%)"; }
+
+  /* ---------- guardar edicoes no navegador (opcional) ---------- */
+  function salvarLocal() { try { localStorage.setItem(CHAVE_LOCAL, JSON.stringify(edits)); } catch (e) {} }
+  function lerLocal() { try { var t = localStorage.getItem(CHAVE_LOCAL); return t ? JSON.parse(t) : {}; } catch (e) { return {}; } }
+  try { var tm = localStorage.getItem("sonora_painel_tema"); if (tm) document.documentElement.setAttribute("data-tema", tm); } catch (e) {}
+
+  /* ---------- carregar catalogo ---------- */
+  function abrirArquivo() { $("arquivo").click(); }
+  $("btnCarregar").onclick = abrirArquivo;
+  $("btnCarregar2").onclick = abrirArquivo;
+  $("arquivo").onchange = function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try { iniciar(JSON.parse(r.result)); }
+      catch (e) { $("boasVindas").innerHTML = "<h2>Não consegui ler esse arquivo</h2><p>Escolha o <code>indice.json</code> (em <code>etapa1_nomes\\saida\\app</code>).</p><button class='btn prim' id='btnTentar'>Escolher de novo</button>"; $("btnTentar").onclick = abrirArquivo; }
+    };
+    r.readAsText(f, "utf-8");
+    this.value = "";
+  };
+
+  function iniciar(j) {
+    if (!j || !Array.isArray(j.artistas)) throw new Error("formato");
+    artistas = j.artistas.map(function (a) {
+      return { id: a.id, nome: a.nome, genero: a.genero || "Outros", foto: a.foto || null, faixas: a.faixas || 0 };
+    });
+    var set = {};
+    GENEROS_BASE.forEach(function (g) { set[g] = 1; });
+    artistas.forEach(function (a) { set[a.genero] = 1; });
+    generos = Object.keys(set).sort(function (a, b) {
+      if (a === "Outros") return 1; if (b === "Outros") return -1; return a.localeCompare(b, "pt-BR");
+    });
+    edits = lerLocal();
+    var ids = {}; artistas.forEach(function (a) { ids[a.id] = 1; });
+    Object.keys(edits).forEach(function (k) { if (!ids[k]) delete edits[k]; });   // artista que sumiu do catalogo
+    artistas.sort(function (a, b) { return b.faixas - a.faixas || a.nome.localeCompare(b.nome, "pt-BR"); });
+    $("boasVindas").hidden = true;
+    $("painel").hidden = false;
+    montarFiltroGenero();
+    aplicarFiltros();
+    atualizarContadores();
+  }
+
+  function montarFiltroGenero() {
+    var o = '<option value="">Todos os gêneros</option>';
+    generos.forEach(function (g) { o += '<option value="' + esc(g) + '">' + esc(g === "Outros" ? "Outros (sem gênero)" : g) + '</option>'; });
+    $("filtroGenero").innerHTML = o;
+  }
+
+  /* ---------- estado de cada artista ---------- */
+  function generoAtual(a) { var e = edits[a.id]; return e && e.genero ? e.genero : a.genero; }
+  function fotoAtual(a) {
+    var e = edits[a.id];
+    if (e && e.foto !== undefined) return e.foto === "-" ? null : e.foto;
+    return a.foto;
+  }
+  function nomeAtual(a) { var e = edits[a.id]; return e && e.nome ? e.nome : a.nome; }
+  function nTitulos(e) { return e && e.titulos ? Object.keys(e.titulos).length : 0; }
+  function vazio(e) { return e.genero === undefined && e.foto === undefined && !e.nome && !nTitulos(e); }
+  function podar(a) { var e = edits[a.id]; if (e && vazio(e)) delete edits[a.id]; }
+  function mudou(a) { return !!edits[a.id] && !vazio(edits[a.id]); }
+  function totalAlteracoes() { var n = 0; artistas.forEach(function (a) { var e = edits[a.id]; if (!e) return; if (e.genero !== undefined) n++; if (e.foto !== undefined) n++; if (e.nome) n++; n += nTitulos(e); }); return n; }
+
+  function atualizarContadores() {
+    var semFoto = 0, semGen = 0, alt = 0;
+    artistas.forEach(function (a) {
+      if (!fotoAtual(a)) semFoto++;
+      if (generoAtual(a) === "Outros") semGen++;
+      if (mudou(a)) alt++;
+    });
+    $("contadores").innerHTML =
+      '<div class="cont"><b>' + artistas.length + '</b>artistas</div>' +
+      '<div class="cont"><b>' + semFoto + '</b>sem foto</div>' +
+      '<div class="cont"><b>' + semGen + '</b>sem gênero</div>' +
+      '<div class="cont"><b>' + alt + '</b>alterados</div>';
+    var n = totalAlteracoes();
+    $("btnExportar").textContent = "Exportar correções (" + n + ")";
+    $("btnExportar").disabled = n === 0;
+    $("btnPublicar").textContent = "Salvar e publicar (" + n + ")";
+    $("btnPublicar").disabled = n === 0 || publicando;
+    ["soSemFoto", "soSemGenero", "soMudou"].forEach(function (id) {
+      $("chip" + id.slice(2)).classList.toggle("on", $(id).checked);
+    });
+  }
+
+  /* ---------- lista ---------- */
+  function aplicarFiltros() {
+    var q = norm($("busca").value.trim());
+    var g = $("filtroGenero").value;
+    var sf = $("soSemFoto").checked, sg = $("soSemGenero").checked, sm = $("soMudou").checked;
+    visiveis = artistas.filter(function (a) {
+      if (q && norm(a.nome).indexOf(q) < 0) return false;
+      if (g && generoAtual(a) !== g) return false;
+      if (sf && fotoAtual(a)) return false;
+      if (sg && generoAtual(a) !== "Outros") return false;
+      if (sm && !mudou(a)) return false;
+      return true;
+    });
+    pagina = 1;
+    desenhar();
+  }
+
+  function opcoesGenero(sel) {
+    var o = "";
+    generos.forEach(function (g) { o += '<option value="' + esc(g) + '"' + (g === sel ? " selected" : "") + '>' + esc(g === "Outros" ? "Outros (sem gênero)" : g) + '</option>'; });
+    o += '<option value="__novo__">+ novo gênero...</option>';
+    return o;
+  }
+
+  function linhaHtml(a) {
+    var g = generoAtual(a), f = fotoAtual(a), m = mudou(a);
+    var ini = esc((a.nome.trim()[0] || "?").toUpperCase());
+    var img = f
+      ? '<img class="foto" loading="lazy" referrerpolicy="no-referrer" src="' + esc(f) + '" alt="" data-ini="' + ini + '" data-cor="' + esc(cor(a.nome)) + '">'
+      : '<div class="inicial" style="background:' + cor(a.nome) + '">' + ini + '</div>';
+    var tags = "";
+    if (!f) tags += '<span class="tag aviso">sem foto</span>';
+    if (g === "Outros") tags += '<span class="tag aviso">sem gênero</span>';
+    if (m) tags += '<span class="tag ok">alterado</span>';
+    var e0 = edits[a.id] || {};
+    if (e0.nome) tags += '<span class="tag ok">antes: ' + esc(a.nome) + '</span>';
+    if (nTitulos(e0)) tags += '<span class="tag ok">' + nTitulos(e0) + ' música(s) renomeada(s)</span>';
+    var e = edits[a.id] || {};
+    return '<div class="linha' + (m ? " mudou" : "") + '" data-id="' + esc(a.id) + '">' +
+      '<div>' + img + '</div>' +
+      '<div><div class="nome">' + esc(nomeAtual(a)) + '</div><div class="meta"><span>' + a.faixas + ' faixa' + (a.faixas === 1 ? "" : "s") + '</span>' + tags + '</div></div>' +
+      '<div class="gen-col"><select class="gen' + (e.genero !== undefined ? " mudou" : "") + '" aria-label="Gênero de ' + esc(a.nome) + '">' + opcoesGenero(g) + '</select></div>' +
+      '<div class="acao-col"><button class="btn" data-foto="1">Trocar foto</button><button class="btn" data-renomear="1">Renomear</button><button class="btn so-servidor" data-faixas="1">Músicas</button></div>' +
+      '</div>';
+  }
+
+  function desenhar() {
+    var ate = Math.min(visiveis.length, pagina * POR_PAGINA);
+    var h = "";
+    for (var i = 0; i < ate; i++) h += linhaHtml(visiveis[i]);
+    if (!visiveis.length) h = '<div class="vazio"><h2>Nenhum artista encontrado</h2><p>Mude a busca ou os filtros.</p></div>';
+    $("lista").innerHTML = h;
+    $("btnMais").hidden = ate >= visiveis.length;
+    $("btnMais").textContent = "Mostrar mais (" + (visiveis.length - ate) + " restantes)";
+    var imgs = $("lista").querySelectorAll("img.foto");
+    imgs.forEach(function (im) { im.onerror = function () { trocarPorInicial(im); }; });
+  }
+  function trocarPorInicial(im) {
+    var d = document.createElement("div");
+    d.className = "inicial"; d.style.background = im.getAttribute("data-cor"); d.textContent = im.getAttribute("data-ini");
+    im.replaceWith(d);
+  }
+
+  $("btnMais").onclick = function () { pagina++; desenhar(); };
+  var temporizador;
+  $("busca").oninput = function () { clearTimeout(temporizador); temporizador = setTimeout(aplicarFiltros, 150); };
+  ["filtroGenero", "soSemFoto", "soSemGenero", "soMudou"].forEach(function (id) {
+    $(id).onchange = function () { aplicarFiltros(); atualizarContadores(); };
+  });
+
+  function artistaDaLinha(el) {
+    var l = el.closest(".linha"); if (!l) return null;
+    var id = l.getAttribute("data-id");
+    for (var i = 0; i < artistas.length; i++) if (artistas[i].id === id) return artistas[i];
+    return null;
+  }
+
+  function definirGenero(a, g) {
+    var e = edits[a.id] || (edits[a.id] = {});
+    if (g === a.genero) delete e.genero; else e.genero = g;
+    podar(a);
+    salvarLocal(); atualizarContadores();
+  }
+
+  $("lista").addEventListener("change", function (ev) {
+    var sel = ev.target.closest("select.gen"); if (!sel) return;
+    var a = artistaDaLinha(sel); if (!a) return;
+    if (sel.value === "__novo__") {
+      var col = sel.parentNode;
+      col.innerHTML = '<div class="novo-gen"><input type="text" maxlength="40" placeholder="Nome do gênero" aria-label="Novo gênero"><button class="btn prim">OK</button></div>';
+      var inp = col.querySelector("input"); inp.focus();
+      var ok = function () {
+        var nome = inp.value.replace(/[;\r\n]/g, " ").trim();
+        if (nome) { if (generos.indexOf(nome) < 0) { generos.push(nome); generos.sort(function (x, y) { if (x === "Outros") return 1; if (y === "Outros") return -1; return x.localeCompare(y, "pt-BR"); }); montarFiltroGenero(); } definirGenero(a, nome); }
+        desenharLinha(a);
+      };
+      col.querySelector("button").onclick = ok;
+      inp.onkeydown = function (e) { if (e.key === "Enter") ok(); if (e.key === "Escape") desenharLinha(a); };
+      return;
+    }
+    definirGenero(a, sel.value);
+    desenharLinha(a);
+  });
+
+  function desenharLinha(a) {
+    var l = $("lista").querySelector('.linha[data-id="' + (window.CSS && CSS.escape ? CSS.escape(a.id) : a.id) + '"]');
+    if (!l) return;
+    var t = document.createElement("div"); t.innerHTML = linhaHtml(a);
+    var nova = t.firstChild; l.replaceWith(nova);
+    var im = nova.querySelector("img.foto"); if (im) im.onerror = function () { trocarPorInicial(im); };
+    atualizarContadores();
+  }
+
+  $("lista").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-foto]");
+    if (b) { var a = artistaDaLinha(b); if (a) abrirFoto(a); return; }
+    b = ev.target.closest("[data-renomear]");
+    if (b) { var a2 = artistaDaLinha(b); if (a2) renomearArtista(a2, b.closest(".linha")); return; }
+    b = ev.target.closest("[data-faixas]");
+    if (b) { var a3 = artistaDaLinha(b); if (a3) abrirFaixas(a3); }
+  });
+
+  /* ---------- renomear artista ---------- */
+  function renomearArtista(a, linha) {
+    var alvo = linha.querySelector(".nome");
+    alvo.innerHTML = '<div class="nome-edit"><input type="text" maxlength="80" aria-label="Novo nome"><button class="btn prim">OK</button><button class="btn">Cancelar</button></div>';
+    var inp = alvo.querySelector("input"); inp.value = nomeAtual(a); inp.focus(); inp.select();
+    var bs = alvo.querySelectorAll("button");
+    var ok = function () {
+      var n = inp.value.replace(/[;\r\n"]/g, " ").replace(/\s+/g, " ").trim();
+      var e = edits[a.id] || (edits[a.id] = {});
+      if (!n || n === a.nome) delete e.nome; else e.nome = n;
+      podar(a); salvarLocal(); desenharLinha(a);
+    };
+    bs[0].onclick = ok; bs[1].onclick = function () { desenharLinha(a); };
+    inp.onkeydown = function (ev) { if (ev.key === "Enter") ok(); if (ev.key === "Escape") desenharLinha(a); };
+  }
+
+  /* ---------- renomear musicas (so no modo servidor) ---------- */
+  var artistaFaixas = null, faixasCarregadas = [];
+  function abrirFaixas(a) {
+    artistaFaixas = a; $("fxTitulo").textContent = "Músicas de " + nomeAtual(a);
+    $("fxBusca").value = ""; $("fxLista").innerHTML = "Carregando..."; abrirJanela("janFaixas");
+    fetch("/api/artista/" + encodeURIComponent(a.id), { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("x"); return r.json();
+    }).then(function (j) { faixasCarregadas = j.faixas || []; desenharFaixas(); })
+      .catch(function () { $("fxLista").textContent = "Não consegui carregar as músicas desse artista."; });
+  }
+  function tituloAtual(f) { var e = edits[artistaFaixas.id]; return e && e.titulos && e.titulos[f.id] !== undefined ? e.titulos[f.id] : f.titulo; }
+  function desenharFaixas() {
+    var q = norm($("fxBusca").value), h = "";
+    faixasCarregadas.forEach(function (f) {
+      if (q && norm(tituloAtual(f)).indexOf(q) < 0 && norm(f.titulo).indexOf(q) < 0) return;
+      var e = edits[artistaFaixas.id], m = e && e.titulos && e.titulos[f.id] !== undefined;
+      h += '<div class="fx"><input type="text" maxlength="120" data-fid="' + esc(f.id) + '" class="' + (m ? "mudou" : "") + '" value="' + esc(tituloAtual(f)) + '">' +
+        '<small>' + esc(f.versao || "") + '</small></div>';
+    });
+    $("fxLista").innerHTML = h || "Nenhuma música encontrada.";
+  }
+  $("fxBusca").oninput = desenharFaixas;
+  $("fxLista").addEventListener("change", function (ev) {
+    var inp = ev.target.closest("input[data-fid]"); if (!inp) return;
+    var id = inp.getAttribute("data-fid"), orig = "";
+    faixasCarregadas.forEach(function (f) { if (f.id === id) orig = f.titulo; });
+    var v = inp.value.replace(/[;\r\n]/g, " ").replace(/\s+/g, " ").trim();
+    var e = edits[artistaFaixas.id] || (edits[artistaFaixas.id] = {});
+    e.titulos = e.titulos || {};
+    if (!v || v === orig) delete e.titulos[id]; else e.titulos[id] = v;
+    if (!nTitulos(e)) delete e.titulos;
+    podar(artistaFaixas); salvarLocal(); inp.className = e.titulos && e.titulos[id] !== undefined ? "mudou" : "";
+    atualizarContadores();
+  });
+  $("btnFecharFx").onclick = function () { fecharJanela("janFaixas"); if (artistaFaixas) desenharLinha(artistaFaixas); };
+
+  /* ---------- janela da foto ---------- */
+  function abrirJanela(id) { $(id).classList.add("aberto"); }
+  function fecharJanela(id) { $(id).classList.remove("aberto"); }
+
+  function abrirFoto(a) {
+    artistaFoto = a;
+    fotoEscolhida = fotoAtual(a);
+    $("fotoTitulo").textContent = a.nome;
+    $("fotoSub").textContent = a.faixas + " faixa" + (a.faixas === 1 ? "" : "s") + " · " + generoAtual(a);
+    $("dzBusca").value = a.nome;
+    $("fotoUrl").value = fotoEscolhida || "";
+    $("dzResultados").innerHTML = "";
+    $("dzEstado").textContent = "";
+    $("dzEstado").className = "estado";
+    atualizarPrev();
+    atualizarGoogle();
+    abrirJanela("janFoto");
+    buscarDeezer();
+  }
+  function atualizarGoogle() {
+    $("linkGoogle").href = "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(($("dzBusca").value || "") + " cantor banda");
+  }
+  function atualizarPrev() {
+    var u = $("fotoUrl").value.trim();
+    var p = $("fotoPrev");
+    p.referrerPolicy = "no-referrer";
+    if (u) { p.src = u; p.style.visibility = "visible"; } else { p.removeAttribute("src"); p.style.visibility = "hidden"; }
+  }
+  $("fotoUrl").oninput = function () { fotoEscolhida = this.value.trim() || null; marcarCandidatos(); atualizarPrev(); };
+  $("dzBusca").oninput = atualizarGoogle;
+  $("dzBusca").onkeydown = function (e) { if (e.key === "Enter") buscarDeezer(); };
+  $("btnDz").onclick = buscarDeezer;
+
+  function marcarCandidatos() {
+    $("dzResultados").querySelectorAll(".cand").forEach(function (c) {
+      c.classList.toggle("sel", c.getAttribute("data-url") === fotoEscolhida);
+    });
+  }
+
+  // O Deezer nao libera CORS; o modo JSONP (script) funciona de uma pagina aberta no PC.
+  var contadorJsonp = 0;
+  function jsonp(url, ms) {
+    return new Promise(function (resolve, reject) {
+      var nome = "__dz" + (++contadorJsonp) + "_" + Date.now();
+      var s = document.createElement("script");
+      var fim = setTimeout(function () { limpar(); reject(new Error("tempo")); }, ms || 9000);
+      function limpar() { clearTimeout(fim); delete window[nome]; if (s.parentNode) s.parentNode.removeChild(s); }
+      window[nome] = function (d) { limpar(); resolve(d); };
+      s.onerror = function () { limpar(); reject(new Error("rede")); };
+      s.src = url + (url.indexOf("?") < 0 ? "?" : "&") + "output=jsonp&callback=" + nome;
+      document.head.appendChild(s);
+    });
+  }
+
+  var buscaAtual = 0;
+  function buscarDeezer() {
+    var q = $("dzBusca").value.trim();
+    if (!q) return;
+    var minha = ++buscaAtual;
+    var est = $("dzEstado"); est.className = "estado"; est.textContent = "Buscando no Deezer...";
+    $("dzResultados").innerHTML = "";
+    jsonp("https://api.deezer.com/search/artist?limit=12&q=" + encodeURIComponent(q)).then(function (d) {
+      if (minha !== buscaAtual) return;
+      var lista = (d && d.data) || [];
+      if (!lista.length) { est.textContent = "O Deezer não achou nada com esse nome. Tente outra grafia ou cole o endereço da imagem."; return; }
+      est.textContent = "Clique na foto certa. O número é a quantidade de fãs (o artista famoso costuma ter mais).";
+      var h = "";
+      lista.forEach(function (x) {
+        var url = x.picture_big || x.picture_medium; if (!url) return;
+        h += '<div class="cand' + (url === fotoEscolhida ? " sel" : "") + '" data-url="' + esc(url) + '" tabindex="0" role="button" aria-label="' + esc(x.name) + '">' +
+          '<img loading="lazy" referrerpolicy="no-referrer" src="' + esc(x.picture_medium || url) + '" alt="">' +
+          '<b>' + esc(x.name) + '</b><small>' + (x.nb_fan || 0).toLocaleString("pt-BR") + ' fãs</small></div>';
+      });
+      $("dzResultados").innerHTML = h;
+    }).catch(function () {
+      if (minha !== buscaAtual) return;
+      est.className = "estado erro";
+      est.textContent = "Não consegui falar com o Deezer (rede bloqueada ou sem internet). Use o Google Imagens e cole o endereço da imagem abaixo.";
+    });
+  }
+  function escolherCand(el) {
+    var c = el.closest(".cand"); if (!c) return;
+    fotoEscolhida = c.getAttribute("data-url");
+    $("fotoUrl").value = fotoEscolhida;
+    marcarCandidatos(); atualizarPrev();
+  }
+  $("dzResultados").addEventListener("click", function (e) { escolherCand(e.target); });
+  $("dzResultados").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); escolherCand(e.target); } });
+
+  function definirFoto(a, valor) {      // valor: URL, "-" (remover) ou undefined (voltar ao original)
+    var e = edits[a.id] || (edits[a.id] = {});
+    if (valor === undefined || (valor === a.foto) || (valor === "-" && !a.foto)) delete e.foto; else e.foto = valor;
+    podar(a);
+    salvarLocal();
+  }
+  $("btnAplicarFoto").onclick = function () {
+    var u = $("fotoUrl").value.trim();
+    if (!u) { $("dzEstado").className = "estado erro"; $("dzEstado").textContent = "Escolha uma foto ou cole um endereço primeiro."; return; }
+    if (!/^https?:\/\//i.test(u)) { $("dzEstado").className = "estado erro"; $("dzEstado").textContent = "O endereço precisa começar com http:// ou https://"; return; }
+    if (/[;\s]/.test(u)) { $("dzEstado").className = "estado erro"; $("dzEstado").textContent = "O endereço não pode ter espaço nem ponto e vírgula."; return; }
+    definirFoto(artistaFoto, u); fecharJanela("janFoto"); desenharLinha(artistaFoto);
+  };
+  $("btnSemFoto").onclick = function () { definirFoto(artistaFoto, "-"); fecharJanela("janFoto"); desenharLinha(artistaFoto); };
+  $("btnDesfazerFoto").onclick = function () { definirFoto(artistaFoto, undefined); fecharJanela("janFoto"); desenharLinha(artistaFoto); };
+  $("btnCancelarFoto").onclick = function () { fecharJanela("janFoto"); };
+
+  /* ---------- exportar ---------- */
+  function limparCampo(t) { return String(t).replace(/[;\r\n]/g, ",").trim(); }
+  function gerarLinhas() {
+    var linhas = [];
+    artistas.forEach(function (a) {
+      var e = edits[a.id]; if (!e) return;
+      var n = limparCampo(e.nome || a.nome);
+      if (e.nome) {                                   // renomeado: o artista "novo" precisa levar genero e foto junto
+        linhas.push("unir;" + limparCampo(a.nome) + ";" + n);
+        var g = generoAtual(a), f = fotoAtual(a);
+        if (g && g !== "Outros") linhas.push("genero;" + n + ";" + limparCampo(g));
+        if (f) linhas.push("foto;" + n + ";" + f);
+        else if (e.foto === "-") linhas.push("foto;" + n + ";-");
+      } else {
+        if (e.genero !== undefined) linhas.push("genero;" + n + ";" + limparCampo(e.genero));
+        if (e.foto !== undefined) linhas.push("foto;" + n + ";" + (e.foto === "-" ? "-" : e.foto));
+      }
+      if (e.titulos) Object.keys(e.titulos).forEach(function (id) { linhas.push("titulo;" + id + ";" + limparCampo(e.titulos[id])); });
+    });
+    var data = new Date().toLocaleDateString("pt-BR");
+    return ["# --- painel_artistas.html (" + data + ") ---"].concat(linhas).join("\r\n") + "\r\n";
+  }
+  $("btnExportar").onclick = function () { $("expTexto").value = gerarLinhas(); $("expEstado").textContent = ""; abrirJanela("janExportar"); };
+  $("btnFecharExp").onclick = function () { fecharJanela("janExportar"); };
+  $("btnCopiar").onclick = function () {
+    var t = $("expTexto").value;
+    function ok() { $("expEstado").textContent = "Copiado. Cole no final do correcoes.csv."; }
+    function manual() { $("expTexto").select(); try { document.execCommand("copy"); ok(); } catch (e) { $("expEstado").textContent = "Selecione o texto e copie com Ctrl+C."; } }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, manual); else manual();
+  };
+  $("btnBaixar").onclick = function () {
+    var blob = new Blob(["﻿" + $("expTexto").value], { type: "text/csv;charset=utf-8" });
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "correcoes_painel.csv";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    $("expEstado").textContent = "Arquivo baixado. Copie o conteúdo dele para o fim do correcoes.csv.";
+  };
+  $("btnLimpar").onclick = function () {
+    if (this.getAttribute("data-confirma") !== "1") { this.setAttribute("data-confirma", "1"); this.textContent = "Clique de novo para apagar tudo"; return; }
+    edits = {}; salvarLocal(); this.removeAttribute("data-confirma"); this.textContent = "Limpar alterações";
+    fecharJanela("janExportar"); aplicarFiltros(); atualizarContadores();
+  };
+
+  /* ---------- modo servidor: salvar e publicar com um clique ---------- */
+  var publicando = false;
+  function postar(url, corpo) {
+    return fetch(url, { method: "POST", headers: { "X-Sonora": "1", "Content-Type": "text/plain; charset=utf-8" }, body: corpo })
+      .then(function (r) { return r.json().then(function (j) { j._http = r.status; return j; }); });
+  }
+  function carregarDoServidor() {
+    return fetch("/api/indice", { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("sem indice");
+      return r.json();
+    }).then(iniciar);
+  }
+  if (/^https?:$/.test(location.protocol)) {
+    carregarDoServidor().then(function () {
+      $("btnPublicar").hidden = false; $("btnCarregar").hidden = true; document.body.classList.add("servidor");
+      atualizarContadores();
+    }).catch(function () {});
+  }
+  function acompanhar(desde) {
+    fetch("/api/status?desde=" + desde, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (st) {
+      if (st.linhas.length) {
+        var log = $("pubLog"); log.textContent += (log.textContent ? "\n" : "") + st.linhas.join("\n"); log.scrollTop = log.scrollHeight;
+      }
+      if (st.rodando) { setTimeout(function () { acompanhar(st.total); }, 1000); return; }
+      publicando = false; $("btnFecharPub").disabled = false;
+      if (st.codigo === 0) {
+        $("pubEstado").textContent = "Pronto! Catálogo publicado. Os aparelhos recebem ao abrir o app.";
+        edits = {}; salvarLocal();
+        carregarDoServidor().catch(function () {});
+      } else {
+        $("pubEstado").textContent = "A atualização falhou (veja o texto abaixo). Suas alterações continuam salvas; corrija e clique de novo.";
+        $("pubEstado").className = "estado erro";
+        atualizarContadores();
+      }
+    }).catch(function () { setTimeout(function () { acompanhar(desde); }, 2000); });
+  }
+  $("btnPublicar").onclick = function () {
+    if (publicando) return;
+    publicando = true; this.disabled = true;
+    $("pubLog").textContent = ""; $("pubEstado").className = "estado"; $("pubEstado").textContent = "Gravando correções e atualizando o catálogo... (pode levar alguns minutos)";
+    $("btnFecharPub").disabled = true; abrirJanela("janPublicar");
+    postar("/api/publicar", gerarLinhas()).then(function (j) {
+      if (!j.ok) {
+        publicando = false; $("btnFecharPub").disabled = false; $("pubEstado").className = "estado erro";
+        $("pubEstado").textContent = "Não foi possível publicar: " + (j.erro || "erro") + (j.rejeitadas && j.rejeitadas.length ? " — linhas recusadas: " + j.rejeitadas.join(" | ") : "");
+        atualizarContadores(); return;
+      }
+      acompanhar(0);
+    }).catch(function () {
+      publicando = false; $("btnFecharPub").disabled = false; $("pubEstado").className = "estado erro";
+      $("pubEstado").textContent = "Perdi a conexão com o servidor. Ele (abrir_painel.bat) ainda está aberto?";
+      atualizarContadores();
+    });
+  };
+  $("btnFecharPub").onclick = function () { fecharJanela("janPublicar"); };
+
+  /* ---------- tema e atalhos ---------- */
+  $("btnTema").onclick = function () {
+    var atual = document.documentElement.getAttribute("data-tema") === "claro" ? "escuro" : "claro";
+    document.documentElement.setAttribute("data-tema", atual);
+    try { localStorage.setItem("sonora_painel_tema", atual); } catch (e) {}
+  };
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { fecharJanela("janFoto"); fecharJanela("janExportar"); fecharJanela("janFaixas"); }
+  });
+  ["janFoto", "janExportar"].forEach(function (id) {
+    $(id).addEventListener("mousedown", function (e) { if (e.target === this) fecharJanela(id); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -36,6 +36,16 @@ So entra no app o que estiver la dentro. A pasta antiga `Musicas\Sonora` ficou d
 - Primeira vez: no painel, card **Catalogo de musicas**, cole o link do `catalogo.zip` do Drive, deixe a versao
   vazia (automatica) e clique **Publicar catalogo**.
 
+### Corrigir genero ou foto de artistas (painel_artistas.html) - tudo pelo painel
+De duplo clique em `abrir_painel.bat` (ou `py painel_servidor.py`). O navegador abre o painel ja com o catalogo carregado.
+Escolha o genero de cada artista na lista e, em **Trocar foto**, busque no Deezer (clique na foto certa) ou cole o endereco de uma
+imagem. Tambem da para **Renomear** o cantor/banda (se o nome novo ja existir, os dois sao juntados num so) e, no botao **Musicas**, mudar o titulo de cada musica (so o nome mostrado no app; o arquivo no Drive nao muda). Quando terminar, clique em **Salvar e publicar**: o painel grava as linhas no `etapa1_nomes\correcoes.csv`, roda
+`atualizar_musicas.ps1 -SoCorrecoes` (nao le o Drive, so aplica as correcoes) e copia o `catalogo.zip` para a pasta do Drive; os
+aparelhos recebem ao abrir o app. Deixe a janela preta aberta enquanto usa o painel. A busca no Deezer so funciona com internet livre;
+se a rede bloquear, use o botao Google Imagens e cole o endereco.
+Sem o servidor (abrindo so o `painel_artistas.html`): use **Carregar catalogo** + **Exportar correcoes** e cole o resultado no FINAL
+do `correcoes.csv` com o Bloco de Notas/VS Code (nao o Excel), depois rode `.\atualizar_musicas.ps1`.
+
 ## 2. Mudou o app (precisa de APK novo)
 1. Suba a versao em `app\lib\config.dart` (`versaoApp`) e `app\pubspec.yaml` (`version`). O numero depois do `+`
    precisa aumentar sempre. Ex.: `0.7.2+9` -> `0.7.3+10`.

@@ -2,7 +2,8 @@
 #   powershell -ExecutionPolicy Bypass -File .\atualizar_musicas.ps1
 # Uso: .\atualizar_musicas.ps1            (normal)
 #      .\atualizar_musicas.ps1 -RefazerFotos   (tenta de novo artistas sem foto, se a rede falhou)
-param([switch]$RefazerFotos)
+#      .\atualizar_musicas.ps1 -SoCorrecoes    (nao le o Drive; so aplica o correcoes.csv no cache atual - usado pelo painel)
+param([switch]$RefazerFotos, [switch]$SoCorrecoes)
 $ErrorActionPreference = 'Stop'
 $extra = @()
 if ($RefazerFotos) { $extra = @('--refazer-falhas') }
@@ -11,6 +12,10 @@ $raiz = $PSScriptRoot
 $base = 'https://sonora-backend-99445390129.us-central1.run.app'
 $pasta = Join-Path $raiz 'etapa1_nomes'
 
+if ($SoCorrecoes) {
+    Write-Host '1-2/5 Pulando a leitura do Drive (usando o cache atual)...'
+    if (-not (Test-Path (Join-Path $pasta 'cache.json'))) { throw 'Nao existe etapa1_nomes\cache.json; rode .\atualizar_musicas.ps1 sem -SoCorrecoes uma vez.' }
+} else {
 Write-Host '1/5 Lendo a biblioteca no Drive (gerar cache)...'
 try {
     $r = Invoke-RestMethod "$base/gerar-cache?chave=$ChaveGerarCache" -TimeoutSec 1800
@@ -29,6 +34,7 @@ if ($cab -notmatch '"geradoEm"') { throw 'O arquivo baixado nao parece um cache 
 $atual = Join-Path $pasta 'cache.json'
 if (Test-Path $atual) { Copy-Item $atual (Join-Path $pasta 'cache_anterior.json') -Force }
 Move-Item $novo $atual -Force
+}
 
 Set-Location $pasta
 Write-Host '3/5 Identificando artistas, generos e fotos (precisa de internet)...'

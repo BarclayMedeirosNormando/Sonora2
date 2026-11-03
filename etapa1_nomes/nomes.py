@@ -265,3 +265,21 @@ def ler_nome(arquivo: str, pasta: str | None = None, pasta_avo: str | None = Non
     r.artista, r.titulo = artista, titulo
     r.chave_artista = chave(artista) if artista else None
     return r
+
+
+def ler_linhas_csv(caminho):
+    """Le correcoes.csv de forma tolerante: aceita UTF-8 ou ANSI (Excel/Bloco de Notas) e
+    linhas que o Excel embrulhou em aspas com ';;;' no fim. Devolve lista de campos por linha."""
+    import csv
+    linhas = []
+    for i, ln in enumerate(open(caminho, "rb").read().splitlines()):
+        try:
+            t = ln.decode("utf-8-sig" if i == 0 else "utf-8")
+        except UnicodeDecodeError:
+            t = ln.decode("cp1252")
+        m = re.fullmatch(r'\s*"([^"]*)";*\s*', t)
+        if m:
+            t = m.group(1)
+        if t.strip():
+            linhas.append(next(csv.reader([t], delimiter=";")))
+    return linhas
