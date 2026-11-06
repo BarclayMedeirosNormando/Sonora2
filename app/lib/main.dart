@@ -1,7 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'splash.dart';
 
-void main() => runApp(const SonoraApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Servico de audio em primeiro plano: mantem a musica e a troca de faixa
+  // funcionando com a tela apagada ou o app em segundo plano.
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'br.sonora2.audio',
+    androidNotificationChannelName: 'Sonora',
+    androidNotificationOngoing: true,
+    // sem botoes de avancar/voltar 10s: o app nao usa e eles quebravam a
+    // notificacao no Android 13+ (icone de CustomAction ausente)
+    fastForwardInterval: Duration.zero,
+    rewindInterval: Duration.zero,
+  );
+  // Android 13+: pede permissao para mostrar a notificacao de midia.
+  try {
+    await Permission.notification.request();
+  } catch (_) {}
+  runApp(const SonoraApp());
+}
 
 class SonoraApp extends StatelessWidget {
   const SonoraApp({super.key});

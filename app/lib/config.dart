@@ -1,13 +1,17 @@
 /// Endereco do backend do Sonora (Cloud Run) que serve o audio pela rota /midia.
 /// Cole aqui a mesma URL usada no app Sonora atual (AppConstants.cloudRunBaseUrl),
 /// sem barra no final. Ex.: 'https://sonora-backend-xxxxx-uc.a.run.app'
-const String urlBackend = '';
+const String urlBackend = 'https://sonora-backend-99445390129.us-central1.run.app';
 
 /// De onde o audio e buscado. Sem backend configurado, tenta o link direto do
 /// Drive (no navegador costuma falhar por CORS; no Android funciona).
-String urlAudio(String fileId) => urlBackend.isEmpty
-    ? 'https://drive.google.com/uc?export=download&id=$fileId'
-    : '$urlBackend/midia/$fileId';
+String urlAudio(String fileId, [String? appId]) => urlBackend.isEmpty
+    ? urlAudioDireto(fileId)
+    : '$urlBackend/midia/$fileId?appId=${Uri.encodeQueryComponent(appId ?? '')}';
+
+/// Link direto do Drive (reserva, caso o backend falhe).
+String urlAudioDireto(String fileId) =>
+    'https://drive.google.com/uc?export=download&id=$fileId';
 
 /// Endereco do Web App (Apps Script) que libera aparelhos e recebe o que foi ouvido,
 /// o mesmo que termina em /exec. Deixe VAZIO para desligar o controle (o app abre para todos).

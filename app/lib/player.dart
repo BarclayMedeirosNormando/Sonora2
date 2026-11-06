@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'acesso.dart';
 import 'biblioteca_usuario.dart';
 import 'catalogo.dart';
 import 'config.dart';
@@ -69,11 +71,26 @@ class PlayerService extends ChangeNotifier {
     _agendarTelemetria(_fila[i]);
     notifyListeners();
     try {
-      final local = DownloadService.i.caminho(_fila[i].id);
+      final f = _fila[i];
+      final item = MediaItem(
+        id: f.id,
+        title: f.tituloCompleto,
+        artist: f.artista,
+        artUri: (f.foto != null && f.foto!.startsWith('http'))
+            ? Uri.parse(f.foto!)
+            : null,
+      );
+      final local = DownloadService.i.caminho(f.id);
       if (local != null) {
-        await _audio.setFilePath(local);
+        await _audio.setFilePath(local, tag: item);
       } else {
-        await _audio.setUrl(urlAudio(_fila[i].id));
+        final appId = await AcessoService.i.obterId();
+        try {
+          await _audio.setUrl(urlAudio(f.id, appId), tag: item);
+        } catch (_) {
+          // backend fora do ar ou aparelho nao liberado: tenta o link direto do Drive
+          await _audio.setUrl(urlAudioDireto(f.id), tag: item);
+        }
       }
       _audio.play();
     } catch (e) {

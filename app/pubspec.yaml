@@ -16,6 +16,8 @@ dependencies:
   ota_update: ^7.1.0
   archive: ^4.0.0
   cached_network_image: ^3.4.1
+  just_audio_background: ^0.0.1-beta.17
+  permission_handler: 11.3.1
 
 flutter:
   uses-material-design: true

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'acesso.dart';
 import 'armazenamento.dart';
 import 'catalogo.dart';
 import 'config.dart';
@@ -139,8 +140,9 @@ class DownloadService extends ChangeNotifier {
     final arquivo = '${f.id}.mp3';
     try {
       _pasta ??= await pastaDownloads();
+      final appId = await AcessoService.i.obterId();
       final bytes = await baixarArquivo(
-        urlAudio(f.id),
+        urlAudio(f.id, appId),
         '$_pasta/$arquivo',
         aoProgresso: (rec, total) {
           final novo = total == null ? null : rec / total;

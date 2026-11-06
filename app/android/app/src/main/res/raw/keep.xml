@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Impede o shrinker de recursos do R8 de remover os icones usados pelo
+     audio_service (referenciados so por nome, em tempo de execucao). -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/audio_service_stop,@drawable/audio_service_fast_forward,@drawable/audio_service_fast_rewind" />
