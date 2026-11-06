@@ -88,6 +88,9 @@ class Catalogo {
     return b.toString();
   }
 
+  /// Minusculas e sem acento (para buscar "ze" e achar "Zé").
+  static String normalizar(String t) => _norm(t);
+
   /// Busca faixas pelo titulo (ou "titulo artista"), ignorando acentos.
   Future<List<Faixa>> buscarFaixas(String consulta, {int limite = 50}) async {
     if (_indiceFaixas == null) {

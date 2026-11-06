@@ -205,6 +205,22 @@ void menuFaixa(BuildContext context, Faixa f, {Playlist? daPlaylist}) {
                   },
                 ),
             ListTile(
+              leading: const Icon(Icons.queue_play_next),
+              title: const Text('Tocar a seguir'),
+              onTap: () {
+                PlayerService.instancia.tocarAProxima(f);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.queue_music),
+              title: const Text('Adicionar à fila'),
+              onTap: () {
+                PlayerService.instancia.adicionarNaFila(f);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.playlist_add),
               title: const Text('Adicionar à playlist'),
               onTap: () {

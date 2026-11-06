@@ -157,6 +157,27 @@ class PlayerService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Poe a musica logo depois da que esta tocando (com embaralhar ligado a ordem e aleatoria).
+  void tocarAProxima(Faixa f) {
+    if (_fila.isEmpty) {
+      tocarLista([f], 0);
+      return;
+    }
+    final pos = _indice + 1 > _fila.length ? _fila.length : _indice + 1;
+    _fila.insert(pos, f);
+    notifyListeners();
+  }
+
+  /// Poe a musica no fim da fila.
+  void adicionarNaFila(Faixa f) {
+    if (_fila.isEmpty) {
+      tocarLista([f], 0);
+      return;
+    }
+    _fila.add(f);
+    notifyListeners();
+  }
+
   void reordenar(int de, int para) {
     if (de < 0 || de >= _fila.length) return;
     final atual = this.atual;

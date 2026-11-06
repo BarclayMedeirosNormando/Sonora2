@@ -241,16 +241,17 @@ class _AbaBuscarState extends State<AbaBuscar> {
   @override
   Widget build(BuildContext context) {
     final q = _c.text.trim().toLowerCase();
+    final qn = Catalogo.normalizar(q);
     final artistas = q.length < 2
         ? <ArtistaResumo>[]
         : widget.cat.artistas
-            .where((a) => a.nome.toLowerCase().contains(q))
+            .where((a) => Catalogo.normalizar(a.nome).contains(qn))
             .take(50)
             .toList();
     final generos = q.length < 2
         ? <Genero>[]
         : widget.cat.generos
-            .where((g) => g.nome.toLowerCase().contains(q))
+            .where((g) => Catalogo.normalizar(g.nome).contains(qn))
             .toList();
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Padding(
