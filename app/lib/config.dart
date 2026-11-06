@@ -18,4 +18,4 @@ String urlAudioDireto(String fileId) =>
 const String urlControle = 'https://script.google.com/macros/s/AKfycbyXh50EaxHMiVv4BqbFNcSZ0RmEztszXWt8LTZT_QJoLLKBgT62ffHmdxwEXaUEH17D/exec';
 
 /// Versao mostrada na tela Inicio e enviada ao painel. Manter igual ao pubspec.yaml.
-const String versaoApp = '0.7.2+9';
+const String versaoApp = '0.7.3+10';
