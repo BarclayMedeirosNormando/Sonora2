@@ -337,12 +337,23 @@ titulo;178gXLmAeiYUlTEU-tWO8aOppMFT_qjCc;Exploitation of Sound - Hero Recording 
 unir;Various Artists;The Weather Girls
 genero;The Weather Girls;Discoteca
 foto;The Weather Girls;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6GlNzLNZpua_oMiTkIW6g7SK-eWMsa-0vFTDAROf7BUd6s40gs39B4UQy&s=10
+# --- painel_artistas (03/11/2026 22:06) ---
+unir;CC Music Factory;C & C Music Factory
+genero;C & C Music Factory;Eletrônica
+foto;C & C Music Factory;https://cdn-images.dzcdn.net/images/artist//500x500-000000-80-0-0.jpg
+# --- painel_artistas (03/11/2026 22:10) ---
+foto;C & C Music Factory;https://cdn-images.dzcdn.net/images/artist/ca8c3fa85ecba1cf51564371b4b24bd0/500x500-000000-80-0-0.jpg
+# --- painel_artistas (04/11/2026 21:54) ---
+genero;Cacá Magalhães;MPB
+genero;BTS;K-pop
+genero;Hotelo;Rock
+genero;João Napoli;Pop
+genero;Sixpence None the Richer;Pop
 # --- painel_artistas (04/11/2026 22:13) ---
 foto;Akatu e Péricles;https://th.bing.com/th/id/OIP.oXbDNinnec5pL4nBmGCpxwHaFL?w=219&h=180&c=7&r=0&o=7&pid=1.7&rm=3
 # --- painel_artistas (04/11/2026 22:14) ---
 foto;cidadenegraVEVO;https://cdn-images.dzcdn.net/images/artist/7847e7d905488b117bbd171eeb1467ce/500x500-000000-80-0-0.jpg
 # --- painel_artistas (04/11/2026 22:17) ---
-genero;BTS;K-Pop
 genero;Coldplay X BTS;K-Pop
 foto;Coldplay X BTS;https://th.bing.com/th/id/OIP.3TKNo1Cas7P8uP-Lk8LqXwHaEK?w=322&h=180&c=7&r=0&o=7&pid=1.7&rm=3
 # --- painel_artistas (04/11/2026 22:19) ---
@@ -383,7 +394,6 @@ foto;Cent;https://cdn-images.dzcdn.net/images/artist/58da3cca2d598e43c7a7823cf75
 genero;Diggo;Pagode/Samba
 foto;Diggo;https://cdn-images.dzcdn.net/images/artist/13737fa2be2d7234c62645664dcda1ef/500x500-000000-80-0-0.jpg
 genero;Ferrugem;Pagode/Samba
-genero;Hotelo;Rock
 genero;Hugo e Guilherme;Sertanejo
 unir;Prince and the Revolution;Prince
 genero;Prince;Pop
