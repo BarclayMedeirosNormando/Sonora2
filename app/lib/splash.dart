@@ -52,27 +52,46 @@ class _SplashState extends State<Splash> {
   Widget build(BuildContext context) {
     const alturas = [28.0, 56.0, 84.0, 48.0, 70.0, 36.0, 20.0];
     return Scaffold(
-      body: SafeArea(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment(0, -0.25),
+            radius: 1.0,
+            colors: [Color(0xFF16452A), Color(0xFF0C1511), Color(0xFF0A0A0A)],
+            stops: [0.0, 0.45, 1.0],
+          ),
+        ),
+        child: SafeArea(
         child: Column(children: [
           Expanded(
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
-                width: 132,
-                height: 132,
+                width: 150,
+                height: 150,
                 decoration: BoxDecoration(
-                    color: const Color(0xFF1E1E1E),
-                    borderRadius: BorderRadius.circular(32)),
+                    gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1C2A22), Color(0xFF0B0F0D)]),
+                    borderRadius: BorderRadius.circular(38),
+                    boxShadow: const [
+                      BoxShadow(color: Color(0x661DB954), blurRadius: 70)
+                    ]),
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       for (final h in alturas)
                         Container(
-                          width: 8,
+                          width: 9,
                           height: h,
                           margin: const EdgeInsets.symmetric(horizontal: 3),
                           decoration: BoxDecoration(
-                              color: verde, borderRadius: BorderRadius.circular(4)),
+                              gradient: const LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [Color(0xFF5DF08F), verde]),
+                              borderRadius: BorderRadius.circular(4)),
                         ),
                     ]),
               ),
@@ -81,7 +100,7 @@ class _SplashState extends State<Splash> {
                   style: TextStyle(
                       fontSize: 44, fontWeight: FontWeight.w700, letterSpacing: 1)),
               const SizedBox(height: 8),
-              const Text('Sua música, organizada para você',
+              const Text('Toda a sua música, num só lugar',
                   style: TextStyle(fontSize: 15, color: cinzaTexto)),
             ]),
           ),
@@ -103,6 +122,7 @@ class _SplashState extends State<Splash> {
                   ]),
           ),
         ]),
+        ),
       ),
     );
   }
