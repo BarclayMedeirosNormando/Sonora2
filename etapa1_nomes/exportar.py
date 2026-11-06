@@ -87,6 +87,7 @@ def main():
         faixas.setdefault(f["artista_chave"], []).append(f)
 
     artistas, generos, n_fotos = [], {}, 0
+    n_sem_foto = 0
     busca = []
     for a in db.execute("select * from artistas order by faixas desc"):
         fs = faixas.get(a["chave"])
@@ -100,6 +101,9 @@ def main():
             url = fotos_corr[a["chave"]]
             foto = url if url.startswith("http") else None
             n_fotos += 1 if foto else 0
+        if not foto:                                      # artista sem foto fica fora do app
+            n_sem_foto += 1
+            continue
         s = slug(a["chave"])
         artistas.append({"id": s, "nome": a["nome"], "genero": g, "foto": foto, "faixas": len(fs)})
         generos.setdefault(g, {"nome": g, "artistas": 0, "faixas": 0})
@@ -138,6 +142,7 @@ def main():
             if p.is_file():
                 z.write(p, p.relative_to(out).as_posix())
     print(f"{len(artistas)} artistas, {len(generos)} generos, {n_fotos} fotos (por endereco)")
+    print(f"{n_sem_foto} artistas sem foto ficaram fora do catalogo")
     print(f"Zip: {zpath} ({zpath.stat().st_size / 1e6:.1f} MB)")
     print(f"{sum(len(v) for v in sem.values())} faixas sem artista em {len(sem)} pastas")
     print(f"Pronto: {out}")
