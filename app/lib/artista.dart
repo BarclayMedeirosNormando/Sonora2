@@ -11,21 +11,26 @@ class TelaArtista extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Moldura(
-        appBar: AppBar(),
-        corpo: FutureBuilder<List<Faixa>>(
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        atrasDaBarra: true,
+        corpo: FundoDegrade(
+          foto: artista.foto,
+          texto: artista.nome,
+          child: FutureBuilder<List<Faixa>>(
           future: cat.faixasDe(artista),
           builder: (context, snap) {
             if (snap.hasError) {
               return Center(child: Text('${snap.error}'));
             }
             if (!snap.hasData) {
-              return const Center(child: CircularProgressIndicator());
+              return const EsqueletoLista();
             }
             final faixas = snap.data!;
             final p = PlayerService.instancia;
             return ListView(children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                padding: EdgeInsets.fromLTRB(
+                    20, MediaQuery.of(context).padding.top + kToolbarHeight, 20, 16),
                 child: Column(children: [
                   capa(artista.nome, tamanho: 148, foto: artista.foto),
                   const SizedBox(height: 16),
@@ -48,6 +53,7 @@ class TelaArtista extends StatelessWidget {
                 LinhaFaixa(faixa: faixas[i], onTap: () => p.tocarLista(faixas, i)),
             ]);
           },
+        ),
         ),
       );
 }
@@ -81,9 +87,12 @@ class TelaGenero extends StatelessWidget {
               height: 96,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                  color: corDe(genero.nome),
+                  gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: gradienteDe(genero.nome)),
                   borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.library_music, size: 40),
+              child: Icon(iconeDe(genero.nome), size: 44, color: Colors.white),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -165,18 +174,29 @@ class GradeGeneros extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => TelaGenero(cat, g))),
             child: Container(
               padding: const EdgeInsets.all(12),
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                  color: corDe(g.nome), borderRadius: BorderRadius.circular(10)),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(g.nome,
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 2),
-                    Text('${g.artistas} artistas',
-                        style: const TextStyle(fontSize: 12)),
-                  ]),
+                  gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: gradienteDe(g.nome)),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Stack(children: [
+                Positioned(
+                    right: -6,
+                    bottom: -8,
+                    child: Icon(iconeDe(g.nome), size: 56, color: Colors.white24)),
+                Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(g.nome,
+                          style: const TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 2),
+                      Text('${g.artistas} artistas',
+                          style: const TextStyle(fontSize: 12)),
+                    ]),
+              ]),
             ),
           );
         },

@@ -38,11 +38,21 @@ class _ShellState extends State<Shell> {
   @override
   Widget build(BuildContext context) => Scaffold(
         body: SafeArea(
-          child: IndexedStack(index: _aba, children: [
-            AbaInicio(_cat, aoAtualizarCatalogo: _trocarCatalogo),
-            AbaBuscar(_cat),
-            AbaBiblioteca(_cat),
-          ]),
+          // em tela larga (tablet/web) o conteudo fica centralizado
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 900),
+              child: IndexedStack(
+                  index: _aba,
+                  sizing: StackFit.expand,
+                  children: [
+                    AbaInicio(_cat, aoAtualizarCatalogo: _trocarCatalogo),
+                    AbaBuscar(_cat),
+                    AbaBiblioteca(_cat),
+                  ]),
+            ),
+          ),
         ),
         bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
           const MiniPlayer(),
@@ -124,7 +134,16 @@ class AbaInicio extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6)),
                 clipBehavior: Clip.antiAlias,
                 child: Row(children: [
-                  Container(width: 56, color: corDe(g.nome)),
+                  Container(
+                      width: 56,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: gradienteDe(g.nome))),
+                      child: Icon(iconeDe(g.nome),
+                          size: 24, color: Colors.white70)),
                   const SizedBox(width: 12),
                   Expanded(
                       child: Text(g.nome,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'biblioteca_usuario.dart';
 import 'player.dart';
 import 'playlists.dart';
@@ -27,8 +28,13 @@ class PlayerTela extends StatelessWidget {
         }
         final fav = MinhaBiblioteca.i.ehFavorito(f.id);
         final lado = (MediaQuery.of(context).size.width - 64).clamp(180.0, 340.0);
-        return Scaffold(
+        return FundoDegrade(
+          foto: f.foto,
+          texto: f.artista,
+          child: Scaffold(
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
+            backgroundColor: Colors.transparent,
             leading: IconButton(
                 tooltip: 'Fechar',
                 icon: const Icon(Icons.keyboard_arrow_down, size: 30),
@@ -54,7 +60,23 @@ class PlayerTela extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Column(children: [
                 const SizedBox(height: 16),
-                capa(f.artista, tamanho: lado, quadrada: true, foto: f.foto),
+                GestureDetector(
+                  // deslizar a capa troca de faixa
+                  onHorizontalDragEnd: (d) {
+                    final v = d.primaryVelocity ?? 0;
+                    if (v < -300) {
+                      HapticFeedback.selectionClick();
+                      p.proxima();
+                    } else if (v > 300) {
+                      HapticFeedback.selectionClick();
+                      p.anterior();
+                    }
+                  },
+                  child: Hero(
+                      tag: 'capa-player',
+                      child: capa(f.artista,
+                          tamanho: lado, quadrada: true, foto: f.foto)),
+                ),
                 const SizedBox(height: 24),
                 Row(children: [
                   Expanded(
@@ -78,9 +100,19 @@ class PlayerTela extends StatelessWidget {
                   IconButton(
                       tooltip: fav ? 'Remover dos favoritos' : 'Favoritar',
                       iconSize: 28,
-                      icon: Icon(fav ? Icons.favorite : Icons.favorite_border,
-                          color: fav ? verde : null),
-                      onPressed: () => MinhaBiblioteca.i.alternarFavorito(f)),
+                      icon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        transitionBuilder: (c, a) =>
+                            ScaleTransition(scale: a, child: c),
+                        child: Icon(
+                            fav ? Icons.favorite : Icons.favorite_border,
+                            key: ValueKey(fav),
+                            color: fav ? verde : null),
+                      ),
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        MinhaBiblioteca.i.alternarFavorito(f);
+                      }),
                 ]),
                 const _Barra(),
                 Row(
@@ -106,7 +138,10 @@ class PlayerTela extends StatelessWidget {
                             iconSize: 36,
                             color: Colors.black,
                             icon: Icon(p.tocando ? Icons.pause : Icons.play_arrow),
-                            onPressed: p.alternar),
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              p.alternar();
+                            }),
                       ),
                       IconButton(
                           tooltip: 'Próxima',
@@ -145,6 +180,7 @@ class PlayerTela extends StatelessWidget {
               ]),
             ),
           ),
+        ),
         );
       },
     );

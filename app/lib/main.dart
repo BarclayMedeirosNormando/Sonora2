@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'splash.dart';
@@ -34,6 +35,8 @@ class SonoraApp extends StatelessWidget {
           brightness: Brightness.dark,
           colorSchemeSeed: const Color(0xFF1DB954),
           useMaterial3: true,
+          textTheme: GoogleFonts.interTextTheme(
+              ThemeData(brightness: Brightness.dark).textTheme),
           scaffoldBackgroundColor: const Color(0xFF121212),
           appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xFF121212),
