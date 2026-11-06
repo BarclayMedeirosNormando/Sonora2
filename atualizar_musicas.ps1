@@ -12,6 +12,20 @@ $raiz = $PSScriptRoot
 $base = 'https://sonora-backend-99445390129.us-central1.run.app'
 $pasta = Join-Path $raiz 'etapa1_nomes'
 
+# Pasta do Drive usada para os dois PCs trocarem artistas.json e fotos (nao vao pelo Git).
+# Pode ser definida em config_local.ps1 ($PastaTroca); se nao, usa ...\Musicas\Transferencia ao lado de $PastaDrive.
+if (-not $PastaTroca -and $PastaDrive) { $PastaTroca = Join-Path (Split-Path $PastaDrive -Parent) 'Transferencia' }
+function Sincronizar($de, $para, $rotulo) {
+    # copia so o que e mais novo (/XO); nunca apaga nada
+    $o = @('/XO', '/R:1', '/W:1', '/NFL', '/NDL', '/NJH', '/NJS', '/NP')
+    robocopy $de $para 'artistas.json' @o | Out-Null
+    if (Test-Path (Join-Path $de 'fotos')) { robocopy (Join-Path $de 'fotos') (Join-Path $para 'fotos') /E /MT:8 @o | Out-Null }
+    Write-Host "    $rotulo concluido."
+    $global:LASTEXITCODE = 0
+}
+$saidaLocal = Join-Path $pasta 'saida'
+$trocaOk = $PastaTroca -and (Test-Path $PastaTroca)
+
 if ($SoCorrecoes) {
     Write-Host '1-2/5 Pulando a leitura do Drive (usando o cache atual)...'
     if (-not (Test-Path (Join-Path $pasta 'cache.json'))) { throw 'Nao existe etapa1_nomes\cache.json; rode .\atualizar_musicas.ps1 sem -SoCorrecoes uma vez.' }
@@ -36,6 +50,14 @@ if (Test-Path $atual) { Copy-Item $atual (Join-Path $pasta 'cache_anterior.json'
 Move-Item $novo $atual -Force
 }
 
+if ($trocaOk) {
+    Write-Host 'Recebendo artistas.json e fotos mais novos da pasta de troca do Drive...'
+    New-Item -ItemType Directory -Force -Path $saidaLocal | Out-Null
+    Sincronizar $PastaTroca $saidaLocal 'Recebimento'
+} elseif ($PastaTroca) {
+    Write-Host "AVISO: pasta de troca nao encontrada ($PastaTroca); pulando a sincronizacao de artistas.json/fotos."
+}
+
 Set-Location $pasta
 Write-Host '3/5 Identificando artistas, generos e fotos (precisa de internet)...'
 py atualizar.py cache.json --max-artistas 1000 @extra
@@ -49,6 +71,11 @@ if ($LASTEXITCODE -ne 0) { throw 'exportar.py falhou' }
 $assets = Join-Path $raiz 'app\assets\catalogo'
 New-Item -ItemType Directory -Force -Path (Join-Path $assets 'artistas') | Out-Null
 Copy-Item (Join-Path $pasta 'saida\app\*') $assets -Recurse -Force
+
+if ($trocaOk) {
+    Write-Host 'Enviando artistas.json e fotos para a pasta de troca do Drive...'
+    Sincronizar $saidaLocal $PastaTroca 'Envio'
+}
 
 Write-Host '5/5 Guardando o catalogo.zip...'
 $zip = Join-Path $pasta 'saida\catalogo.zip'
