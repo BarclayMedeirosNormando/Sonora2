@@ -88,6 +88,11 @@ def main():
 
     artistas, generos, n_fotos = [], {}, 0
     n_sem_foto = 0
+    pdir = saida / "painel"                               # so para o painel; nao vai no catalogo.zip nem no app
+    if pdir.exists():
+        shutil.rmtree(pdir)
+    (pdir / "artistas").mkdir(parents=True)
+    todos = []
     busca = []
     for a in db.execute("select * from artistas order by faixas desc"):
         fs = faixas.get(a["chave"])
@@ -101,10 +106,17 @@ def main():
             url = fotos_corr[a["chave"]]
             foto = url if url.startswith("http") else None
             n_fotos += 1 if foto else 0
+        s = slug(a["chave"])
+        # o painel enxerga TODOS os artistas (inclusive sem foto), para dar para corrigir; o app so os com foto
+        pj = {"id": s, "nome": a["nome"], "genero": g, "foto": foto, "faixas": [
+            {k: v for k, v in (("id", f["id"]), ("titulo", titulos_corr.get(f["id"], f["titulo"])),
+                               ("versao", f["versao"]), ("convidados", f["convidados"])) if v}
+            for f in fs]}
+        (pdir / "artistas" / f"{s}.json").write_text(json.dumps(pj, ensure_ascii=False), encoding="utf-8")
+        todos.append({"id": s, "nome": a["nome"], "genero": g, "foto": foto, "faixas": len(fs)})
         if not foto:                                      # artista sem foto fica fora do app
             n_sem_foto += 1
             continue
-        s = slug(a["chave"])
         artistas.append({"id": s, "nome": a["nome"], "genero": g, "foto": foto, "faixas": len(fs)})
         generos.setdefault(g, {"nome": g, "artistas": 0, "faixas": 0})
         generos[g]["artistas"] += 1
@@ -126,6 +138,9 @@ def main():
     ordem = sorted(generos.values(), key=lambda x: (x["nome"] == OUTROS, -x["faixas"]))
     (out / "indice.json").write_text(json.dumps(
         {"generos": ordem, "artistas": artistas}, ensure_ascii=False), encoding="utf-8")
+
+    (pdir / "indice.json").write_text(json.dumps(
+        {"generos": ordem, "artistas": todos}, ensure_ascii=False), encoding="utf-8")
 
     (out / "faixas_busca.json").write_text(
         json.dumps(busca, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

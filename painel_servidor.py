@@ -18,7 +18,10 @@ from urllib.parse import urlparse, parse_qs
 
 RAIZ = Path(__file__).resolve().parent
 PAINEL = RAIZ / "painel_artistas.html"
-INDICE = RAIZ / "etapa1_nomes" / "saida" / "app" / "indice.json"
+_SAIDA = RAIZ / "etapa1_nomes" / "saida"
+# o painel usa a lista completa (com artistas sem foto) quando existe; senao cai no indice do app
+BASE = _SAIDA / "painel" if (_SAIDA / "painel" / "indice.json").exists() else _SAIDA / "app"
+INDICE = BASE / "indice.json"
 CORRECOES = RAIZ / "etapa1_nomes" / "correcoes.csv"
 PS1 = RAIZ / "atualizar_musicas.ps1"
 
@@ -117,7 +120,7 @@ class H(BaseHTTPRequestHandler):
             self.wfile.write(b)
         elif u.path.startswith("/api/artista/"):
             aid = u.path[len("/api/artista/"):]
-            arq = RAIZ / "etapa1_nomes" / "saida" / "app" / "artistas" / (aid + ".json")
+            arq = BASE / "artistas" / (aid + ".json")
             if not re.fullmatch(r"\w+", aid) or not arq.exists():
                 return self._json({"ok": False}, 404)
             b = arq.read_bytes()
