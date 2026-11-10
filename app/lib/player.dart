@@ -14,15 +14,20 @@ import 'telemetria.dart';
 /// repetir e timer para dormir.
 class PlayerService extends ChangeNotifier {
   PlayerService._() {
-    _audio.playerStateStream.listen((s) {
-      if (s.processingState == ProcessingState.completed) _terminou();
-      notifyListeners();
-    });
+    _audio.playerStateStream.listen((_) => notifyListeners());
+    // Quem troca de faixa e o player nativo (lista gapless): continua funcionando
+    // com a tela apagada, mesmo se o Android suspender o codigo Dart.
+    _audio.currentIndexStream.listen(_mudouIndice);
+    _audio.playbackEventStream.listen((_) {}, onError: _erroNativo);
   }
   static final PlayerService instancia = PlayerService._();
 
   final AudioPlayer _audio = AudioPlayer();
   final Random _rng = Random();
+  ConcatenatingAudioSource _fonte = ConcatenatingAudioSource(children: []);
+  String _appId = '';
+  String? _marcado; // faixa ja registrada como recente/telemetria
+  final Set<String> _direto = {}; // faixas que ja cairam para o link direto do Drive
   List<Faixa> _fila = [];
   int _indice = -1;
   bool embaralhar = false;
@@ -60,38 +65,93 @@ class PlayerService extends ChangeNotifier {
     }
     _fila = List.of(lista);
     embaralhar = aleatorio;
-    await tocarIndice(aleatorio ? _rng.nextInt(_fila.length) : indice);
+    erro = null;
+    _marcado = null;
+    _direto.clear();
+    final alvo = aleatorio ? _rng.nextInt(_fila.length) : indice;
+    _indice = alvo;
+    _marcarInicio(_fila[alvo]);
+    notifyListeners();
+    try {
+      _appId = await AcessoService.i.obterId();
+      _fonte = ConcatenatingAudioSource(children: [for (final f in _fila) _fonteDe(f)]);
+      await _audio.setLoopMode(_modoRepetir());
+      await _audio.setShuffleModeEnabled(embaralhar);
+      await _audio.setAudioSource(_fonte,
+          initialIndex: alvo, initialPosition: Duration.zero);
+      if (embaralhar) await _audio.shuffle();
+      _audio.play();
+    } catch (e) {
+      erro = 'Nao foi possivel tocar: $e';
+    }
+    notifyListeners();
+  }
+
+  AudioSource _fonteDe(Faixa f, {bool direto = false}) {
+    final item = MediaItem(
+      id: f.id,
+      title: f.tituloCompleto,
+      artist: f.artista,
+      artUri: (f.foto != null && f.foto!.startsWith('http'))
+          ? Uri.parse(f.foto!)
+          : null,
+    );
+    final local = DownloadService.i.caminho(f.id);
+    if (local != null) return AudioSource.file(local, tag: item);
+    final url = direto ? urlAudioDireto(f.id) : urlAudio(f.id, _appId);
+    return AudioSource.uri(Uri.parse(url), tag: item);
+  }
+
+  LoopMode _modoRepetir() => switch (repetir) {
+        1 => LoopMode.all,
+        2 => LoopMode.one,
+        _ => LoopMode.off,
+      };
+
+  void _marcarInicio(Faixa f) {
+    if (_marcado == f.id) return;
+    _marcado = f.id;
+    MinhaBiblioteca.i.registrarRecente(f);
+    _agendarTelemetria(f);
+  }
+
+  void _mudouIndice(int? i) {
+    if (i == null || i < 0 || i >= _fila.length) return;
+    _indice = i;
+    erro = null;
+    _marcarInicio(_fila[i]);
+    notifyListeners();
+  }
+
+  /// Falha ao abrir uma faixa: tenta uma vez o link direto do Drive; senao pula.
+  void _erroNativo(Object e, StackTrace st) {
+    final i = _audio.currentIndex; // PlayerException nao informa o indice; a faixa com erro e a atual
+    if (i != null && i >= 0 && i < _fila.length && _direto.add(_fila[i].id)) {
+      _trocarPorDireto(i);
+      return;
+    }
+    erro = 'Nao foi possivel tocar: $e';
+    notifyListeners();
+    if (_audio.hasNext) _audio.seekToNext();
+  }
+
+  Future<void> _trocarPorDireto(int i) async {
+    try {
+      await _fonte.removeAt(i);
+      await _fonte.insert(i, _fonteDe(_fila[i], direto: true));
+      await _audio.seek(Duration.zero, index: i);
+      _audio.play();
+    } catch (e) {
+      erro = 'Nao foi possivel tocar: $e';
+      notifyListeners();
+    }
   }
 
   Future<void> tocarIndice(int i) async {
     if (i < 0 || i >= _fila.length) return;
-    _indice = i;
     erro = null;
-    MinhaBiblioteca.i.registrarRecente(_fila[i]);
-    _agendarTelemetria(_fila[i]);
-    notifyListeners();
     try {
-      final f = _fila[i];
-      final item = MediaItem(
-        id: f.id,
-        title: f.tituloCompleto,
-        artist: f.artista,
-        artUri: (f.foto != null && f.foto!.startsWith('http'))
-            ? Uri.parse(f.foto!)
-            : null,
-      );
-      final local = DownloadService.i.caminho(f.id);
-      if (local != null) {
-        await _audio.setFilePath(local, tag: item);
-      } else {
-        final appId = await AcessoService.i.obterId();
-        try {
-          await _audio.setUrl(urlAudio(f.id, appId), tag: item);
-        } catch (_) {
-          // backend fora do ar ou aparelho nao liberado: tenta o link direto do Drive
-          await _audio.setUrl(urlAudioDireto(f.id), tag: item);
-        }
-      }
+      await _audio.seek(Duration.zero, index: i);
       _audio.play();
     } catch (e) {
       erro = 'Nao foi possivel tocar: $e';
@@ -109,14 +169,6 @@ class PlayerService extends ChangeNotifier {
     });
   }
 
-  void _terminou() {
-    if (repetir == 2) {
-      tocarIndice(_indice);
-    } else {
-      proxima();
-    }
-  }
-
   Future<void> alternar() async {
     _audio.playing ? await _audio.pause() : _audio.play();
     notifyListeners();
@@ -124,24 +176,15 @@ class PlayerService extends ChangeNotifier {
 
   Future<void> proxima() async {
     if (_fila.isEmpty) return;
-    if (embaralhar && _fila.length > 1) {
-      var n = _rng.nextInt(_fila.length);
-      while (n == _indice) {
-        n = _rng.nextInt(_fila.length);
-      }
-      await tocarIndice(n);
-    } else if (_indice + 1 < _fila.length) {
-      await tocarIndice(_indice + 1);
-    } else if (repetir == 1) {
-      await tocarIndice(0);
-    }
+    await _audio.seekToNext();
+    if (!_audio.playing) _audio.play();
   }
 
   Future<void> anterior() async {
     if ((await _audio.position).inSeconds > 3) {
       await _audio.seek(Duration.zero);
-    } else if (_indice > 0) {
-      await tocarIndice(_indice - 1);
+    } else {
+      await _audio.seekToPrevious();
     }
   }
 
@@ -149,11 +192,14 @@ class PlayerService extends ChangeNotifier {
 
   void alternarEmbaralhar() {
     embaralhar = !embaralhar;
+    _audio.setShuffleModeEnabled(embaralhar);
+    if (embaralhar) _audio.shuffle();
     notifyListeners();
   }
 
   void alternarRepetir() {
     repetir = (repetir + 1) % 3;
+    _audio.setLoopMode(_modoRepetir());
     notifyListeners();
   }
 
@@ -165,6 +211,7 @@ class PlayerService extends ChangeNotifier {
     }
     final pos = _indice + 1 > _fila.length ? _fila.length : _indice + 1;
     _fila.insert(pos, f);
+    _fonte.insert(pos, _fonteDe(f));
     notifyListeners();
   }
 
@@ -175,6 +222,7 @@ class PlayerService extends ChangeNotifier {
       return;
     }
     _fila.add(f);
+    _fonte.add(_fonteDe(f));
     notifyListeners();
   }
 
@@ -184,6 +232,7 @@ class PlayerService extends ChangeNotifier {
     if (para > de) para -= 1;
     final f = _fila.removeAt(de);
     _fila.insert(para, f);
+    _fonte.move(de, para);
     if (atual != null) _indice = _fila.indexOf(atual);
     notifyListeners();
   }

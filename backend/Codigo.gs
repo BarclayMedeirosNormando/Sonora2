@@ -98,6 +98,12 @@ function doPost(e) {
   try {
     const corpo = JSON.parse(e.postData.contents);
     if (corpo.action === 'plays') return json_(receberPlays_(corpo));
+    if (corpo.action === 'publicar_apk') {   // chamado pelo gerar_apk.ps1 -Publicar (versao nova; mantem o link do APK ja publicado)
+      verificarChave_(corpo.chave);
+      const pr = PropertiesService.getScriptProperties();
+      const notas = corpo.notas !== undefined ? corpo.notas : (pr.getProperty('ATUAL_NOTAS') || '');
+      return json_(publicarAtualizacao(corpo.chave, corpo.versao, corpo.link || pr.getProperty('ATUAL_APK_ID'), notas));
+    }
     return json_({ ok: false, erro: 'acao desconhecida' });
   } catch (err) {
     return json_({ ok: false, erro: String(err && err.message || err) });
